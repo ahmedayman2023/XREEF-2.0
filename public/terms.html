@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XReef - الشروط والأحكام | Terms of Service</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc8fc',
+                            400: '#38acf8',
+                            500: '#0ea0ea',
+                            600: '#0280c7',
+                            700: '#0365a1',
+                            800: '#075685',
+                            900: '#0c486e',
+                            950: '#042e49',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+        }
+        :lang(en) {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+            .print-card {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-brand-500/10 selection:text-brand-700">
+
+    <!-- Header / Navbar (Bilingual) -->
+    <header class="sticky top-0 z-50 glass border-b border-slate-100 no-print transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center shadow-md shadow-brand-500/20">
+                    <span class="text-white font-extrabold text-xl tracking-tight font-sans">XR</span>
+                </div>
+                <div>
+                   <span class="text-xl font-extrabold text-slate-950 font-sans tracking-tight">XReef</span>
+                   <span class="text-xs block text-slate-500 font-medium -mt-1">Project & Quotation System</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-3">
+                <!-- Lang Toggle Button -->
+                <div class="bg-slate-100 p-0.5 rounded-xl inline-flex">
+                    <button onclick="setLang('ar')" id="btn-ar" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm">
+                        العربية
+                    </button>
+                    <button onclick="setLang('en')" id="btn-en" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">
+                        English
+                    </button>
+                </div>
+                
+                <button onclick="window.print()" class="text-slate-500 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 transition-colors" title="طباعة المستند / Print Document">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- Document Card -->
+        <article class="bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-100/40 p-8 sm:p-12 print-card relative overflow-hidden">
+            <!-- Subtle backdrop decor -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-brand-50/50 rounded-full blur-3xl -z-10 -translate-y-12"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -z-10 translate-y-12"></div>
+
+            <!-- ARABIC CONTENT -->
+            <div id="content-ar" class="space-y-8 prose prose-slate max-w-none">
+                <div class="border-b border-slate-150 pb-6">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                        آخر تحديث: 15 يونيو 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">الشروط والأحكام لـ XReef</h1>
+                    <p class="text-slate-500 text-lg mt-2">اتفاقية شروط الخدمة لاستخدام نظام عروض الأسعار وإدارة مشاريع XReef.</p>
+                </div>
+
+                <!-- Navigation Outline -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 no-print">
+                    <h3 class="font-bold text-slate-900 mb-3">جدول المحتويات:</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-brand-700 font-medium">
+                        <li><a href="#ar-agree" class="hover:underline">1. الموافقة والقبول</a></li>
+                        <li><a href="#ar-desc" class="hover:underline">2. وصف الخدمة والميزات</a></li>
+                        <li><a href="#ar-accounts" class="hover:underline">3. شروط إنشاء الحساب والأمن</a></li>
+                        <li><a href="#ar-quotations" class="hover:underline">4. شروط عروض الأسعار والتقديرات المالية</a></li>
+                        <li><a href="#ar-ip" class="hover:underline">5. حقوق الملكية الفكرية والبيانات والمحتوى</a></li>
+                        <li><a href="#ar-rules" class="hover:underline">6. السلوك المحظور والاستخدام المقبول</a></li>
+                        <li><a href="#ar-guarantee" class="hover:underline">7. إخلاء المسؤولية وحدود الضمان</a></li>
+                        <li><a href="#ar-law" class="hover:underline">8. القانون الحاكم والنزاعات</a></li>
+                    </ul>
+                </div>
+
+                <!-- Sections -->
+                <section id="ar-agree" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">1</span>
+                        الموافقة والقبول
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        من خلال الدخول إلى أو استخدام منصة <strong>XReef</strong> لإدارة المشاريع ومقترحات التسعير ("الخدمة")، فإنك تقر وتوافق صراحة على الالتزام بكافة الشروط والأحكام ومستندات السياسة المبينة هنا. إذا كنت لا توافق على هذه الشروط كلياً أو جزئياً، يرجى التوقف فوراً عن استخدام المنصة.
+                    </p>
+                </section>
+
+                <section id="ar-desc" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">2</span>
+                        وصف الخدمة والميزات
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        تعتبر منصة XReef نظام سحابي متطور مصمم خصيصاً لمساعدة رواد الأعمال والمستقلين والشركات على:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>تنظيم وبناء مجلدات للمشاريع الإبداعية ومسارات تقدير الأسعار.</li>
+                        <li>مشاركة عروض الأسعار مع العملاء وعمل المقارنات السعرية.</li>
+                        <li>تشغيل حزمة من الأدوات المعتمدة على الذكاء الاصطناعي لتبسيط كتابة توصيف وتفاصيل بنود المشروعات.</li>
+                    </ul>
+                    <p class="text-slate-600 text-sm pt-2">
+                        نحتفظ بالحق الكامل في تعديل ميزات المنصة، سحب الدعم عن بعض الأدوات، مراجعة هيكلية التراخيص، أو فرض قيود على التخزين السحابي دون إشعار مسبق.
+                    </p>
+                </section>
+
+                <section id="ar-accounts" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">3</span>
+                        شروط إنشاء الحساب والأمن
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        لتفعیل كامل لإمكانيات عروض الأسعار وحفظ مجلداتك بأمان، قد يتطلب الأمر تفعیل الحساب عبر Google Sign-In. أنت توافق على:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>توفير بيانات حساب صحيحة ومحدثة وحرصك على أمن جلساتك الإلكترونية.</li>
+                        <li>تتحمل المسؤولية الكاملة والمنفردة عن كافة الأنشطة والمشاريع وعروض الأسعار التي تنطلق من حسابك في XReef.</li>
+                        <li>إخطارنا فوراً في حال اشتبهت في حدوث اختراق أو وصول غير مرخص لجلسة حسابك.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-quotations" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">4</span>
+                        شروط عروض الأسعار والتقديرات المالية
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        الأداة توفر نظام محاكاة وحسابات لتسهيل صياغة الفواتير والتقديرات المالية للعملاء. يوافق المستخدم على القوانين الحاكمة للممارسات المالية التالية:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li><strong>المسؤولية الرياضية:</strong> تقع مسؤولية تدقيق الحسابات والأسعار والمعدلات الضريبية وهوامش الأرباح على عاتق المستخدم وحده. لا نتحمل أي مسؤولية عن أخطاء في المدخلات الحسابية أو عروض خاطئة يتم تصديرها لعملاءك.</li>
+                        <li><strong>عدم المصادقة التنظيمية:</strong> عروض الأسعار وعقود تقدير المشروعات الصادرة من XReef مصممة للدعم التنظيمي والتقديري الإداري فقط، ولا تغني عن الاستشارة والمراجعة المالية والقانونية والتدقيق الضريبي المعتمد.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-ip" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">5</span>
+                        حقوق الملكية الفكرية والبيانات والمحتوى
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        نحن نقدر الجهد الإبداعي الخاص بك في وضع الهياكل المالية:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li><strong>بياناتك ومشاريعك:</strong> تمتلك تماماً كافة الحقوق الحصرية للبيانات والملفات والأسعار وعروض الأسعار والمشاريع التي ترفعها أو تجمعها وتنشئها عبر حسابك.</li>
+                        <li><strong>ملكية المنصة:</strong> جميع الشفرات المصدرية، التصميمات، الواجهات البصرية، الهياكل السحابية، الشعارات كـ XReef هي ملكية حصرية وحقوق فكرية متبوعة للمنصة ومحمية بموجب قوانين حماية المصنفات وحقوق النشر.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-rules" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">6</span>
+                        السلوك المحظور والاستخدام المقبول
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        أنت توافق على عدم القيام بأي من المهام والممارسات السلوكية الآتية:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>استخدام المنصة لأي غايات غير قانونية أو لانتهاك قوانين حقوق الملكية الفكرية.</li>
+                        <li>محاولة هندسة عكسية للمنصة، أو استخراج أكوادها، أو فك تشفير خوادم Cloud Run وقواعد Firestore الخاصة بها.</li>
+                        <li>تنفيذ هجمات حجب الخدمة (DDoS)، رفع ملفات خبيثة، أو التداخل مع أداء وموثوقية الاتصال بالشبكة السحابية لـ XReef.</li>
+                        <li>استخدام آليات الفحص الأوتوماتيكي المعطلة (Scraping) لجمع واستخلاص بيانات المستخدمين الآخرين أو بيانات عروض الأسعار التنافسية.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-guarantee" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">7</span>
+                        إخلاء المسؤولية وحدود الضمان
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        يتم تقديم خدمات XReef <strong>"كما هي"</strong> و <strong>"كما هي متوفرة"</strong> دون أي ضمانات صريحة أو ضمنية بما في ذلك، على سبيل المثال لا الحصر، ضمانات صلاحية التسويق أو ملاءمتها لغرض معين من جانبك. لا نضمن تواصل المنصة بشكل خال من الانقطاع أو غياب تام للأعطال الفنية بسبب مزودات السحابة والمستضيفين.
+                    </p>
+                </section>
+
+                <section id="ar-law" class="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">8</span>
+                        القانون الحاكم والنزاعات
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        تخضع هذه الشروط والأحكام وتفسر وفقاً للأنظمة والتشريعات المحلية المعمول بها والمنظمة لممارسات الفضاء الرقمي في المنطقة. يؤول الاختصاص القضائي للنظر في أي نزاع ينشأ غيابه في التسويات الودية إلى المحاكم المختصة محلياً.
+                    </p>
+                </section>
+            </div>
+
+            <!-- ENGLISH CONTENT -->
+            <div id="content-en" class="space-y-8 prose prose-slate max-w-none hidden" lang="en" dir="ltr">
+                <div class="border-b border-slate-150 pb-6">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                        Last Updated: June 15, 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">Terms of Service for XReef</h1>
+                    <p class="text-slate-500 text-lg mt-2">Agreement governing your usage of XReef Project and Quotation Management Platform.</p>
+                </div>
+
+                <!-- Navigation Outline -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 no-print">
+                    <h3 class="font-bold text-slate-900 mb-3">Table of Contents:</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-brand-700 font-medium">
+                        <li><a href="#en-agree" class="hover:underline">1. Acceptance of Terms</a></li>
+                        <li><a href="#en-desc" class="hover:underline">2. Service Description & Features</a></li>
+                        <li><a href="#en-accounts" class="hover:underline">3. User Credentials & Safety</a></li>
+                        <li><a href="#en-quotations" class="hover:underline">4. Quotations & Calculations Clause</a></li>
+                        <li><a href="#en-ip" class="hover:underline">5. Platform License & Proprietary Rights</a></li>
+                        <li><a href="#en-rules" class="hover:underline">6. Restricted Activities & Misuse</a></li>
+                        <li><a href="#en-guarantee" class="hover:underline">7. Standard Disclaimers</a></li>
+                        <li><a href="#en-law" class="hover:underline">8. Governing Legislation</a></li>
+                    </ul>
+                </div>
+
+                <!-- Sections -->
+                <section id="en-agree" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">1</span>
+                        Acceptance of Terms
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        By accessing, subscribing, or interacting with the <strong>XReef</strong> Web-based Quotation and Project Management System ("the Platform" or "Service"), you acknowledge that you have read, understood, and consented to be bound by these exhaustive Terms of Service and related rules. Exit immediately if you are uncomfortable with these guidelines.
+                    </p>
+                </section>
+
+                <section id="en-desc" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">2</span>
+                        Service Description & Features
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        XReef provides a tailored, secure, web cloud suite built to organize your commercial estimations:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>Structuring dedicated project folders for custom proposal documents.</li>
+                        <li>Compiling complex quotations with automatic math engines, markup calculators, and professional invoice export pathways.</li>
+                        <li>Retrieving and organizing generative design outputs directly inside associated project task views.</li>
+                    </ul>
+                    <p class="text-slate-600 text-sm pt-2">
+                        We reserve the right to alter features, adjust interface files, restrict active workflows, or implement platform limits on users without prior warnings.
+                    </p>
+                </section>
+
+                <section id="en-accounts" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">3</span>
+                        User Credentials & Safety
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Activating full database integration requires registration via authenticated Google Sign-In. You represent that you will:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>Maintain highly secure, untampered device connections to prevent leakage of active session states.</li>
+                        <li>Remain solely and fully liable for files, quotes, margins, project details, and modifications executed under your authenticated user token.</li>
+                        <li>Immediately notify platform support of session vulnerability or account breach indicators.</li>
+                    </ul>
+                </section>
+
+                <section id="en-quotations" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">4</span>
+                        Quotations & Calculations Clause
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Since our digital templates execute specific logical formulas, you acknowledge the following billing dynamics:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li><strong>Calculative Accuracy:</strong> Double-checking tax parameters, line-item multiplication, discount values, and profit margins is the sole responsibility of the user. XReef shall not be held liable for erroneous pricing sheets, billing errors, or incorrect financial layouts dispatched to end clients.</li>
+                        <li><strong>Regulatory Disclaimer:</strong> Financial exports from XReef strictly serve as analytical structures for general estimation. They do not constitute formal banking audits or professional legal-financial advice.</li>
+                    </ul>
+                </section>
+
+                <section id="en-ip" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">5</span>
+                        Platform License & Proprietary Rights
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        We value your content creation and professional design work:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li><strong>Your Data:</strong> You retain absolute, perpetual intellectual property ownership of all custom quotations, project entries, scope of work files, and media folders linked to your user database.</li>
+                        <li><strong>Our Code:</strong> All software architecture, visual templates, animations, custom stylesheets, vector graphics, logos, brand markers, and proprietary features used to assemble XReef are owned exclusively by XReef and monitored under international copyright frameworks.</li>
+                    </ul>
+                </section>
+
+                <section id="en-rules" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">6</span>
+                        Restricted Activities & Misuse
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        When using XReef, you are strictly prohibited from engaging in the following behaviors:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>Falsifying invoice values, client registries, or misrepresenting certifications on exported papers.</li>
+                        <li>Attempting decompilation, reverse engineering, or exploiting vulnerabilities across our Cloud Run host networks or remote Firestore nodes.</li>
+                        <li>Deploying unauthorized botnets, running automated web-scraping scripts, or initiating high-volume ping requests that risk degrade platform performance.</li>
+                        <li>Using workspace layouts to distribute viruses, trojans, or scripts that disrupt client environments.</li>
+                    </ul>
+                </section>
+
+                <section id="en-guarantee" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">7</span>
+                        Standard Disclaimers
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        XReef is distributed on an <strong>"as is"</strong> and <strong>"as available"</strong> technical basis. We issue no warranties, guarantees of constant web uptime, or absolute defense against minor database latency due to third-party outages. We disclaim any indirect, consequential, or incidental losses resulting from software errors or lost workflow files.
+                    </p>
+                </section>
+
+                <section id="en-law" class="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">8</span>
+                        Governing Legislation
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        These Terms and Conditions are governed by local statutes governing enterprise web operations and digital contracting formats. Disputes that cannot be solved through direct mediation will be routed exclusively to authorized state arbitration centers.
+                    </p>
+                </section>
+            </div>
+
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-8 no-print mt-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2 font-sans font-medium text-slate-400">
+                <span>© 2026 XReef. All rights reserved.</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="privacy.html" class="hover:text-brand-600 transition-colors">سياسة الخصوصية / Privacy Policy</a>
+                <span>•</span>
+                <a href="#top" class="hover:text-brand-600 transition-colors">الرجوع للأعلى / Back to Top</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive JS to Switch Languages -->
+    <script>
+        function setLang(lang) {
+            const arBtn = document.getElementById('btn-ar');
+            const enBtn = document.getElementById('btn-en');
+            const arContent = document.getElementById('content-ar');
+            const enContent = document.getElementById('content-en');
+            const htmlTag = document.documentElement;
+
+            if (lang === 'en') {
+                htmlTag.setAttribute('lang', 'en');
+                htmlTag.setAttribute('dir', 'ltr');
+                
+                // Content display
+                arContent.classList.add('hidden');
+                enContent.classList.remove('hidden');
+
+                // Button Styling
+                enBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm";
+                arBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+            } else {
+                htmlTag.setAttribute('lang', 'ar');
+                htmlTag.setAttribute('dir', 'rtl');
+
+                // Content display
+                enContent.classList.add('hidden');
+                arContent.classList.remove('hidden');
+
+                // Button Styling
+                arBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm";
+                enBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+            }
+        }
+    </script>
+</body>
+</html>

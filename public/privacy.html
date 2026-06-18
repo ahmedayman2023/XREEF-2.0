@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XReef - سياسة الخصوصية | Privacy Policy</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc8fc',
+                            400: '#38acf8',
+                            500: '#0ea0ea',
+                            600: '#0280c7',
+                            700: '#0365a1',
+                            800: '#075685',
+                            900: '#0c486e',
+                            950: '#042e49',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+        }
+        :lang(en) {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+            .print-card {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-brand-500/10 selection:text-brand-700">
+
+    <!-- Header / Navbar (Bilingual) -->
+    <header class="sticky top-0 z-50 glass border-b border-slate-100 no-print transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center shadow-md shadow-brand-500/20">
+                    <span class="text-white font-extrabold text-xl tracking-tight font-sans">XR</span>
+                </div>
+                <div>
+                   <span class="text-xl font-extrabold text-slate-950 font-sans tracking-tight">XReef</span>
+                   <span class="text-xs block text-slate-500 font-medium -mt-1">Project & Quotation System</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center gap-3">
+                <!-- Lang Toggle Button -->
+                <div class="bg-slate-100 p-0.5 rounded-xl inline-flex">
+                    <button onclick="setLang('ar')" id="btn-ar" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm">
+                        العربية
+                    </button>
+                    <button onclick="setLang('en')" id="btn-en" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">
+                        English
+                    </button>
+                </div>
+                
+                <button onclick="window.print()" class="text-slate-500 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-100 transition-colors" title="طباعة المستند / Print Document">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <!-- Document Card -->
+        <article class="bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-100/40 p-8 sm:p-12 print-card relative overflow-hidden">
+            <!-- Subtle backdrop decor -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-brand-50/50 rounded-full blur-3xl -z-10 -translate-y-12"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-50/50 rounded-full blur-3xl -z-10 translate-y-12"></div>
+
+            <!-- ARABIC CONTENT -->
+            <div id="content-ar" class="space-y-8 prose prose-slate max-w-none">
+                <div class="border-b border-slate-150 pb-6">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                        آخر تحديث: 15 يونيو 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">سياسة الخصوصية لـ XReef</h1>
+                    <p class="text-slate-500 text-lg mt-2">نحن ملتزمون بحماية بيانات عروض الأسعار والمشاريع الإبداعية الخاصة بك.</p>
+                </div>
+
+                <!-- Navigation Outline -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 no-print">
+                    <h3 class="font-bold text-slate-900 mb-3">جدول المحتويات:</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-brand-700 font-medium">
+                        <li><a href="#ar-intro" class="hover:underline">1. مقدمة وتمهيد</a></li>
+                        <li><a href="#ar-collect" class="hover:underline">2. البيانات التي نقوم بجمعها</a></li>
+                        <li><a href="#ar-use" class="hover:underline">3. كيف نستخدم معلوماتك</a></li>
+                        <li><a href="#ar-storage" class="hover:underline">4. تخزين وحفظ البيانات</a></li>
+                        <li><a href="#ar-security" class="hover:underline">5. أمن البيانات وحمايتها</a></li>
+                        <li><a href="#ar-sharing" class="hover:underline">6. مشاركة البيانات مع أطراف ثالثة</a></li>
+                        <li><a href="#ar-rights" class="hover:underline">7. حقوق المستخدم والتحكم ببياناته</a></li>
+                        <li><a href="#ar-contact" class="hover:underline">8. معلومات الاتصال والدعم</a></li>
+                    </ul>
+                </div>
+
+                <!-- Sections -->
+                <section id="ar-intro" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">1</span>
+                        مقدمة وتمهيد
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        يرحب بكم نظام <strong>XReef</strong> لإدارة المشاريع وإعداد عروض الأسعار ("المنصة" أو "نحن"). يمثل مستند سياسة الخصوصية هذا التزامنا بحماية حقوق وخصوصية الزوار والمستخدمين لخدماتنا السحابية المتوفرة عبر الويب. نسعى دائماً لضمان إدارة بياناتك بكل فخر وأمان وشفافية كاملة.
+                    </p>
+                </section>
+
+                <section id="ar-collect" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">2</span>
+                        البيانات التي نقوم بجمعها
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        لكي يعمل XReef كأداة قوية ومرنة لإعداد عروض الأسعار والتحكم الإبداعي في ملفات الأعمال والمهام، فإننا نقوم بجمع أنواع البيانات التالية:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li><strong>معلومات الحساب:</strong> الاسم، البريد الإلكتروني، والصورة الرمزية من خلال تسجيل الدخول الآمن بـ Google Authentication.</li>
+                        <li><strong>بيانات عروض الأسعار الحسابية:</strong> تفاصيل البنود والأسعار والتوصيفات المالية والعملات المقترحة لخدماتك.</li>
+                        <li><strong>بيانات إدارة المشاريع:</strong> أسماء المجلدات، هيكل المهام، الملاحظات، معلومات العملاء الخاصة بك، والملفات التي يتم رفعها أو معالجتها.</li>
+                        <li><strong>بيانات الاستخدام الفنية:</strong> معلومات الجهاز، عنوان بروتوكول الإنترنت (IP)، نوع المتصفح المستعمل، والصفحات التي تمت قراءتها.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-use" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">3</span>
+                        كيف نستخدم معلوماتك
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        نستخدم بياناتك بطرق محددة تهدف إلى الحفاظ على الجودة وتقديم تجربة استخدام مستقرة:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>توليد وصياغة وحفظ عروض الأسعار وتتبع المشاريع بسلاسة.</li>
+                        <li>دعم المزامنة السحابية اللحظية للمجلدات لضمان عدم فقدان أعمالك.</li>
+                        <li>توفير خدمات الدعم الفني وحفظ تراخيص استخدام محرك الذكاء الاصطناعي والصور والملفات.</li>
+                        <li>إثبات ملكية واسترجاع البيانات عبر جلسات العمل المختلفة.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-storage" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">4</span>
+                        تخزين وحفظ البيانات
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        يتم تشغيل وحفظ قواعد بيانات المنصة باستخدام خوادم <strong>Cloud Run</strong> و <strong>Firebase Cloud Firestore</strong> في مراكز بيانات آمنة ومدروسة بالكامل. جميع الملفات والصور تدار عبر سلة تخزين سحابية آمنة خاضعة لحوكمة فائقة لضمان بقائها متاحة لك دائماً.
+                    </p>
+                </section>
+
+                <section id="ar-security" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">5</span>
+                        أمن البيانات وحمايتها
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        ننفّذ تدابير أمنية تقنية وتنظيمية متينة للغاية لحماية بياناتك الشخصية من الضياع أو سوء الاستخدام وعمليات الدخول غير المخول بها:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>تشفير جميع قنوات الاتصال والاتصالات السحابية باستخدام بروتوكولات HTTPS و SSL المتطورة.</li>
+                        <li>تطبيق قواعد أمان صارمة ومحدثة لـ Firestore (Firestore Security Rules) لضمان ألا يطّلع أي شخص على بياناتك أو مشاريعك إلا أنت وفقط بعد مصادقة هويتك.</li>
+                        <li>عزل بيئة الحساب تزامناً مع تسجيل الخروج الآمن لضمان عدم مشاركة الجلسات مع زوار آخرين.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-sharing" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">6</span>
+                        مشاركة البيانات مع أطراف ثالثة
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        تحتفظ منصة XReef بخصوصيتك المطلقة. نحن <strong>لا نقوم</strong> ببيع أو مقايضة معلوماتك المالية أو عروض أسعارك أو تفاصيل عملائك مع أي جهات خارجية لأغراض إعلانية. قد نشارك أجزاءً من البيانات المجهية لأغراض معالجة الخوادم المستضيفة والخدمات المكملة أو امتثالاً للتشريعات والأنظمة القضائية وتطبيق القانون.
+                    </p>
+                </section>
+
+                <section id="ar-rights" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">7</span>
+                        حقوق المستخدم والتحكم ببياناته
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        بما يتوافق مع أفضل الممارسات وقوانين الخصوصية العالمية، فإنك تتمتع بالحق الكامل لـ:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pr-4">
+                        <li>الوصول إلى عروض أسعارك وتنزيلها بصيغ إلكترونية.</li>
+                        <li>تعديل بيانات ملفاتك ومجلداتك مباشرة عبر لوحة التحكم بكل يسر وسهولة.</li>
+                        <li>حذف المجلدات وعروض الأسعار والبيانات التي تخصك بشكل كامل وقاطع من قواعد البيانات في أي وقت.</li>
+                    </ul>
+                </section>
+
+                <section id="ar-contact" class="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">8</span>
+                        معلومات الاتصال والدعم
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        إذا كانت لديك أية تساؤلات أو استفسارات بخصوص سياسة الخصوصية الخاصة بالمنصة وإدارة بياناتك، يسعد فرع الدعم الفني والتواصل لدينا باستلام رسائلك:
+                    </p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 inline-block">
+                        <p class="text-sm text-slate-700 font-semibold">بوابة الدعم المباشر لـ XReef:</p>
+                        <a href="mailto:reefco.consult@gmail.com" class="text-brand-600 hover:underline text-sm font-bold block mt-1">reefco.consult@gmail.com</a>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ENGLISH CONTENT -->
+            <div id="content-en" class="space-y-8 prose prose-slate max-w-none hidden" lang="en" dir="ltr">
+                <div class="border-b border-slate-150 pb-6">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                        Last Updated: June 15, 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">Privacy Policy for XReef</h1>
+                    <p class="text-slate-500 text-lg mt-2">We are committed to safeguarding your project specifications, financial quotation data, and design archives.</p>
+                </div>
+
+                <!-- Navigation Outline -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 no-print">
+                    <h3 class="font-bold text-slate-900 mb-3">Table of Contents:</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-brand-700 font-medium">
+                        <li><a href="#en-intro" class="hover:underline">1. Introduction & Overview</a></li>
+                        <li><a href="#en-collect" class="hover:underline">2. Information We Collect</a></li>
+                        <li><a href="#en-use" class="hover:underline">3. How We Use Your Information</a></li>
+                        <li><a href="#en-storage" class="hover:underline">4. Data Storage and Retention</a></li>
+                        <li><a href="#en-security" class="hover:underline">5. Security Standards</a></li>
+                        <li><a href="#en-sharing" class="hover:underline">6. Third-Party Disclosures</a></li>
+                        <li><a href="#en-rights" class="hover:underline">7. User Rights and Controls</a></li>
+                        <li><a href="#en-contact" class="hover:underline">8. Contact & Support Information</a></li>
+                    </ul>
+                </div>
+
+                <!-- Sections -->
+                <section id="en-intro" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">1</span>
+                        Introduction & Overview
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Welcome to <strong>XReef</strong> Project and Quotation Management System ("the Platform", "we", "us", or "our"). We prioritize the security of your dynamic quotations, project specifications, and digital assets. This Privacy Policy details how we compile, govern, and respect the privacy of users interacting with our web cloud ecosystem.
+                    </p>
+                </section>
+
+                <section id="en-collect" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">2</span>
+                        Information We Collect
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        To fulfill complex quotation metrics, workspace flows, and asset-based processes, XReef records:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li><strong>Account Profile Data:</strong> Display name, verified email, and profile photo fetched during Google Sign-In.</li>
+                        <li><strong>Quotation Records:</strong> Financial figures, calculations, line-item descriptions, markup margins, and target customer names.</li>
+                        <li><strong>Project Management Metadata:</strong> Custom folders, task names, timestamps, structured tags, and associated project assets.</li>
+                        <li><strong>Technical System Metrics:</strong> Server access timestamps, browser specifications, operating system types, anonymized interaction coordinates, and networking logs.</li>
+                    </ul>
+                </section>
+
+                <section id="en-use" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">3</span>
+                        How We Use Your Information
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        We deploy user data to operate as a robust and efficient workflow engine:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>Generating, structuring, and preserving financial quotes.</li>
+                        <li>Maintaining synchronous database consistency over visual schemas.</li>
+                        <li>Offering contextual instant support mechanisms if an error occurs.</li>
+                        <li>Optimizing machine rendering of computational operations based on system capacity.</li>
+                    </ul>
+                </section>
+
+                <section id="en-storage" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">4</span>
+                        Data Storage and Retention
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Our backend runs securely on <strong>Cloud Run</strong>, storing transactional documents in <strong>Firebase Cloud Firestore</strong>. File and media attachments are preserved in our cloud storage instances under solid access policies so you can recall files without failures.
+                    </p>
+                </section>
+
+                <section id="en-security" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">5</span>
+                        Security Standards
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        We deploy state-of-the-art procedures to block unauthorized access, modification, or exposure of your business files:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>Adopting full TLS/HTTPS socket routing during transport.</li>
+                        <li>Configuring robust, iron-clad Firestore Security Rules requiring authenticated user signatures matching specific resource owner indices.</li>
+                        <li>Employing isolated session management, automatically stripping temporary local variables during session sign-outs.</li>
+                    </ul>
+                </section>
+
+                <section id="en-sharing" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">6</span>
+                        Third-Party Disclosures
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Your absolute transactional privacy is in safe hands. We <strong>never sell, lease, or distribute</strong> your commercial estimates, client databases, or specific digital works to advertiser pools or marketing aggregators. Information is shared strictly with compliant infrastructure host nodes or under compulsory legal guidelines issued by administrative courts.
+                    </p>
+                </section>
+
+                <section id="en-rights" class="space-y-3">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">7</span>
+                        User Rights and Controls
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        In line with international data privacy standards, you maintain absolute control:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base pl-4">
+                        <li>The right to inspect and audit quotes and project folders on demand.</li>
+                        <li>The right to modify errors or adjust labels instantly.</li>
+                        <li>The right to permanently purge files, documents, and user-profile entries from database servers, with immediate effect.</li>
+                    </ul>
+                </section>
+
+                <section id="en-contact" class="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-950 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">8</span>
+                        Contact & Support Information
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-sm sm:text-base">
+                        Should you have structural inquiries regarding the processing of files, user authentication, or data rights, please contact our support hub:
+                    </p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 inline-block font-sans">
+                        <p class="text-sm text-slate-900 font-bold">XReef Support Portal:</p>
+                        <a href="mailto:reefco.consult@gmail.com" class="text-brand-600 hover:underline text-sm font-bold block mt-1">reefco.consult@gmail.com</a>
+                    </div>
+                </section>
+            </div>
+
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-8 no-print mt-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2 font-sans font-medium text-slate-400">
+                <span>© 2026 XReef. All rights reserved.</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="terms.html" class="hover:text-brand-600 transition-colors">الشروط والأحكام / Terms of Service</a>
+                <span>•</span>
+                <a href="#top" class="hover:text-brand-600 transition-colors">الرجوع للأعلى / Back to Top</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive JS to Switch Languages -->
+    <script>
+        function setLang(lang) {
+            const arBtn = document.getElementById('btn-ar');
+            const enBtn = document.getElementById('btn-en');
+            const arContent = document.getElementById('content-ar');
+            const enContent = document.getElementById('content-en');
+            const htmlTag = document.documentElement;
+
+            if (lang === 'en') {
+                htmlTag.setAttribute('lang', 'en');
+                htmlTag.setAttribute('dir', 'ltr');
+                
+                // Content display
+                arContent.classList.add('hidden');
+                enContent.classList.remove('hidden');
+
+                // Button Styling
+                enBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm";
+                arBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+            } else {
+                htmlTag.setAttribute('lang', 'ar');
+                htmlTag.setAttribute('dir', 'rtl');
+
+                // Content display
+                enContent.classList.add('hidden');
+                arContent.classList.remove('hidden');
+
+                // Button Styling
+                arBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-sm";
+                enBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+            }
+        }
+    </script>
+</body>
+</html>
