@@ -1492,75 +1492,62 @@ export default function ProjectWorkspace() {
            <div className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 flex flex-col">
               
               {isLoading ? (
-                <div className="m-auto w-full max-w-lg bg-[#141419]/90 border border-white/10 rounded-3xl p-8 flex flex-col items-center space-y-6 shadow-2xl backdrop-blur-md relative overflow-hidden text-right animate-in fade-in zoom-in-95" dir="rtl">
-                  {/* Subtle gloss effect on the card */}
-                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-                  <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-neutral-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0a0c]/90 backdrop-blur-lg animate-in fade-in duration-300" dir="ltr">
+                  <style>{`
+                    @keyframes liquid-wave {
+                      0% { transform: translateX(0); }
+                      100% { transform: translateX(-50px); }
+                    }
+                  `}</style>
+                  <div className="relative flex flex-col items-center">
+                    
+                    <div className="w-40 h-40 relative">
+                      <svg width="100%" height="100%" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
+                        <defs>
+                          <clipPath id="cup-clip">
+                            <path d="M 25 40 L 25 70 C 25 85, 30 95, 50 95 C 70 95, 75 85, 75 70 L 75 40 Q 75 35, 70 35 L 30 35 Q 25 35, 25 40 Z" />
+                          </clipPath>
+                        </defs>
 
-                  {/* Mercury Icon container with liquid wave */}
-                  <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center border border-white/10 shadow-lg relative overflow-hidden">
-                    <div className="absolute bottom-0 left-0 w-full bg-neutral-600/40 transition-all duration-300 pointer-events-none" style={{ height: `${progress}%` }}></div>
-                    <Sparkles className="w-7 h-7 text-neutral-300 relative z-10 animate-pulse" />
-                  </div>
+                        {/* Liquid Container */}
+                        <g clipPath="url(#cup-clip)">
+                          <g 
+                            className="transition-transform duration-1000 ease-out" 
+                            style={{ transform: `translateY(${50 - (progress / 100) * 50}px)` }}
+                          >
+                            {/* Back wave */}
+                            <g style={{ animation: 'liquid-wave 3s linear infinite' }}>
+                              <path d="M -50 40 Q -37.5 32, -25 40 T 0 40 T 25 40 T 50 40 T 75 40 T 100 40 T 125 40 T 150 40 V 110 H -50 Z" fill="#60a5fa" fillOpacity="0.6" />
+                            </g>
+                            {/* Front wave */}
+                            <g style={{ animation: 'liquid-wave 2s linear infinite reverse' }}>
+                              <path d="M -50 40 Q -37.5 48, -25 40 T 0 40 T 25 40 T 50 40 T 75 40 T 100 40 T 125 40 T 150 40 V 110 H -50 Z" fill="#3b82f6" />
+                            </g>
+                          </g>
+                        </g>
 
-                  <div className="text-center space-y-1">
-                    <h3 className="text-white font-bold text-lg mb-1 tracking-wide">{loadingText}</h3>
-                    <p className="text-neutral-400 text-xs font-medium">جاري معالجة وتوليد المشهد الفني بدقة</p>
-                  </div>
+                        {/* Cup Handle */}
+                        <path d="M 75 45 L 82 45 Q 87 45, 87 50 L 87 58 Q 87 63, 82 63 L 75 63" fill="none" stroke="#d1d5db" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
-                  {/* Horizontal Liquid Tube Container */}
-                  <div className="w-full space-y-3">
-                    <div className="w-full h-10 bg-[#0f0f12] border border-white/10 rounded-2xl relative overflow-hidden shadow-[inset_0_4px_12px_rgba(0,0,0,0.9),0_1px_2px_rgba(255,255,255,0.05)] p-1 flex items-center">
-                      {/* Liquid Fluid Stream - flows horizontally */}
-                      <div 
-                        className="h-full rounded-xl relative overflow-hidden transition-all duration-500 ease-out flex items-center" 
-                        style={{ 
-                          width: `${Math.max(4, progress)}%`,
-                          background: "linear-gradient(270deg, #2a2a2e 0%, #4b4b54 30%, #a3a3ac 50%, #5c5c66 75%, #2a2a2e 100%)",
-                          backgroundSize: "200% 100%",
-                          animation: "liquid-horizontal-flow 3s linear infinite",
-                          boxShadow: "0 0 15px rgba(163, 163, 172, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4)"
-                        }}
-                      >
-                        {/* Horizontal waves layer */}
-                        <div className="absolute inset-0 opacity-30 mix-blend-color-dodge bg-[repeat-x] pointer-events-none"
-                             style={{
-                               backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 10%, transparent 40%)",
-                               backgroundSize: "24px 24px",
-                               animation: "liquid-wave-drift 1.5s linear infinite"
-                             }}
-                        />
+                        {/* Cup Outline */}
+                        <path d="M 25 40 L 25 70 C 25 85, 30 95, 50 95 C 70 95, 75 85, 75 70 L 75 40 Q 75 35, 70 35 L 30 35 Q 25 35, 25 40 Z" fill="none" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                        {/* Glossy gradient overlay */}
-                        <div className="absolute inset-x-0 bottom-0 top-1/2 opacity-20 mix-blend-screen pointer-events-none"
-                             style={{
-                               backgroundImage: "linear-gradient(180deg, transparent, rgba(255,255,255,0.6))"
-                             }}
-                        />
-
-                        {/* Top highlight glare */}
-                        <div className="absolute top-1 inset-x-2 h-[2px] bg-white/40 rounded-full blur-[0.5px]"></div>
-                      </div>
-
-                      {/* Spark / Liquid drop node at actual progress level */}
-                      {progress > 0 && progress < 100 && (
-                        <div 
-                          className="absolute h-8 w-8 -ml-4 pointer-events-none transition-all duration-500 ease-out flex items-center justify-center animate-pulse"
-                          style={{ left: `${progress}%` }}
-                        >
-                          <div className="w-3 h-3 bg-white rounded-full animate-ping opacity-60"></div>
-                          <div className="w-1.5 h-1.5 bg-white rounded-full absolute shadow-[0_0_8px_#fff]"></div>
-                        </div>
-                      )}
+                        {/* Base Line */}
+                        <line x1="22" y1="102" x2="66" y2="102" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" />
+                        <line x1="74" y1="102" x2="76" y2="102" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" />
+                      </svg>
                     </div>
 
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-neutral-500 text-[10px] font-mono tracking-wider">MERCURY GENERATION FLOW</span>
-                      <span className="text-neutral-300 font-bold font-mono text-xs flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">
-                        <span>{progress}%</span>
-                        <span className="text-neutral-500 text-[10px]">مكتمل</span>
+                    <div className="flex items-center text-2xl font-bold tracking-wide text-[#d1d5db] mt-2">
+                      <span>Loading</span>
+                      <span className="flex gap-1.5 items-end pb-1.5 ml-2">
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0s]" />
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0.15s]" />
+                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0.3s]" />
                       </span>
                     </div>
+
+                    <div className="mt-4 text-neutral-500 font-mono text-sm">{progress}%</div>
                   </div>
                 </div>
               ) : imageUrls.length > 0 ? (
