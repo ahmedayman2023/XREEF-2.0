@@ -936,6 +936,14 @@ export default function ProjectWorkspace() {
           0% { background-position: 20px 0; }
           100% { background-position: 0 0; }
         }
+        @keyframes liquid-horizontal-flow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: -200% 50%; }
+        }
+        @keyframes liquid-wave-drift {
+          0% { background-position: 0px 0px; }
+          100% { background-position: 48px 0px; }
+        }
       `}</style>
 
       {/* Auth Modal */}
@@ -1484,10 +1492,76 @@ export default function ProjectWorkspace() {
            <div className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 flex flex-col">
               
               {isLoading ? (
-                <div className="m-auto flex flex-col items-center justify-center p-8">
-                  <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-6"></div>
-                  <h3 className="text-white font-bold text-lg mb-2 text-center tracking-wide">{loadingText}</h3>
-                  <p className="text-neutral-500 text-sm animate-pulse">{progress}% المكتمل</p>
+                <div className="m-auto w-full max-w-lg bg-[#141419]/90 border border-white/10 rounded-3xl p-8 flex flex-col items-center space-y-6 shadow-2xl backdrop-blur-md relative overflow-hidden text-right animate-in fade-in zoom-in-95" dir="rtl">
+                  {/* Subtle gloss effect on the card */}
+                  <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-neutral-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                  {/* Mercury Icon container with liquid wave */}
+                  <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center border border-white/10 shadow-lg relative overflow-hidden">
+                    <div className="absolute bottom-0 left-0 w-full bg-neutral-600/40 transition-all duration-300 pointer-events-none" style={{ height: `${progress}%` }}></div>
+                    <Sparkles className="w-7 h-7 text-neutral-300 relative z-10 animate-pulse" />
+                  </div>
+
+                  <div className="text-center space-y-1">
+                    <h3 className="text-white font-bold text-lg mb-1 tracking-wide">{loadingText}</h3>
+                    <p className="text-neutral-400 text-xs font-medium">جاري معالجة وتوليد المشهد الفني بدقة</p>
+                  </div>
+
+                  {/* Horizontal Liquid Tube Container */}
+                  <div className="w-full space-y-3">
+                    <div className="w-full h-10 bg-[#0f0f12] border border-white/10 rounded-2xl relative overflow-hidden shadow-[inset_0_4px_12px_rgba(0,0,0,0.9),0_1px_2px_rgba(255,255,255,0.05)] p-1 flex items-center">
+                      {/* Liquid Fluid Stream - flows horizontally */}
+                      <div 
+                        className="h-full rounded-xl relative overflow-hidden transition-all duration-500 ease-out flex items-center" 
+                        style={{ 
+                          width: `${Math.max(4, progress)}%`,
+                          background: "linear-gradient(270deg, #2a2a2e 0%, #4b4b54 30%, #a3a3ac 50%, #5c5c66 75%, #2a2a2e 100%)",
+                          backgroundSize: "200% 100%",
+                          animation: "liquid-horizontal-flow 3s linear infinite",
+                          boxShadow: "0 0 15px rgba(163, 163, 172, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4)"
+                        }}
+                      >
+                        {/* Horizontal waves layer */}
+                        <div className="absolute inset-0 opacity-30 mix-blend-color-dodge bg-[repeat-x] pointer-events-none"
+                             style={{
+                               backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.8) 10%, transparent 40%)",
+                               backgroundSize: "24px 24px",
+                               animation: "liquid-wave-drift 1.5s linear infinite"
+                             }}
+                        />
+
+                        {/* Glossy gradient overlay */}
+                        <div className="absolute inset-x-0 bottom-0 top-1/2 opacity-20 mix-blend-screen pointer-events-none"
+                             style={{
+                               backgroundImage: "linear-gradient(180deg, transparent, rgba(255,255,255,0.6))"
+                             }}
+                        />
+
+                        {/* Top highlight glare */}
+                        <div className="absolute top-1 inset-x-2 h-[2px] bg-white/40 rounded-full blur-[0.5px]"></div>
+                      </div>
+
+                      {/* Spark / Liquid drop node at actual progress level */}
+                      {progress > 0 && progress < 100 && (
+                        <div 
+                          className="absolute h-8 w-8 -ml-4 pointer-events-none transition-all duration-500 ease-out flex items-center justify-center animate-pulse"
+                          style={{ left: `${progress}%` }}
+                        >
+                          <div className="w-3 h-3 bg-white rounded-full animate-ping opacity-60"></div>
+                          <div className="w-1.5 h-1.5 bg-white rounded-full absolute shadow-[0_0_8px_#fff]"></div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-neutral-500 text-[10px] font-mono tracking-wider">MERCURY GENERATION FLOW</span>
+                      <span className="text-neutral-300 font-bold font-mono text-xs flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-0.5 rounded-md">
+                        <span>{progress}%</span>
+                        <span className="text-neutral-500 text-[10px]">مكتمل</span>
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ) : imageUrls.length > 0 ? (
                 <div className={`m-auto w-full grid gap-6 md:gap-8 max-w-6xl ${
