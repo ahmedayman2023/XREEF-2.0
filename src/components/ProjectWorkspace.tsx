@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Image as ImageIcon, Upload, X, Download, Sparkles, ChevronDown, ChevronUp, Maximize2, Clock, Trash2, Crop, Zap, ImagePlus, Library, Edit2, Plus, Save, LayoutTemplate, Settings2, LogIn, LogOut, Mail, Lock, UserPlus, ArrowLeft, LifeBuoy, Wand2, Folder, Video, Github } from "lucide-react";
+import { Loader2, Image as ImageIcon, Upload, X, Download, Sparkles, ChevronDown, ChevronUp, Maximize2, Clock, Trash2, Crop, Zap, ImagePlus, Library, Edit2, Plus, Save, LayoutTemplate, Settings2, LogIn, LogOut, Mail, Lock, UserPlus, ArrowLeft, LifeBuoy, Wand2, Folder, Video } from "lucide-react";
 import ReactCrop, { type Crop as CropType } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { auth, db, storage, signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, handleFirestoreError, OperationType, getAccessToken, initAuth } from '../firebase';
+import { auth, db, storage, signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, handleFirestoreError, OperationType } from '../firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, doc, setDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -86,11 +86,6 @@ export default function ProjectWorkspace() {
   // Fullscreen State
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Google Drive State
-  const [needsDriveAuth, setNeedsDriveAuth] = useState(false);
-  const [isSavingToDrive, setIsSavingToDrive] = useState(false);
-  const [driveSavedSuccess, setDriveSavedSuccess] = useState<string | null>(null);
-
   // Cropping State
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [crop, setCrop] = useState<CropType>({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
@@ -144,247 +139,8 @@ export default function ProjectWorkspace() {
 
   const [sidebarMode, setSidebarMode] = useState<'generate'>('generate');
 
-  // GitHub Integration State
-  const [gitHubToken, setGitHubToken] = useState<string | null>(() => {
-    try { return localStorage.getItem('xreef_github_token'); } catch { return null; }
-  });
-  const [gitHubRepos, setGitHubRepos] = useState<any[]>([]);
-  const [selectedRepo, setSelectedRepo] = useState<string>(() => {
-    try { return localStorage.getItem('xreef_github_repo') || ""; } catch { return ""; }
-  });
-  const [gitHubPath, setGitHubPath] = useState<string>("images/generated.png");
-  const [isLoadingRepos, setIsLoadingRepos] = useState(false);
-  const [isSavingToGitHub, setIsSavingToGitHub] = useState(false);
-  const [gitHubSaveStatus, setGitHubSaveStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
-  const [gitHubUser, setGitHubUser] = useState<any>(null);
-  const [imageToSaveToGit, setImageToSaveToGit] = useState<string | null>(null);
-  
-  // Custom Client Config for GitHub OAuth (as fallback)
-  const [customGitClientId, setCustomGitClientId] = useState(() => {
-    try { return localStorage.getItem('xreef_github_custom_client_id') || ""; } catch { return ""; }
-  });
-  const [customGitClientSecret, setCustomGitClientSecret] = useState(() => {
-    try { return localStorage.getItem('xreef_github_custom_client_secret') || ""; } catch { return ""; }
-  });
-  const [showGitHubConfig, setShowGitHubConfig] = useState(false);
-
-  const fetchGitHubRepos = async (token: string) => {
-    setIsLoadingRepos(true);
-    try {
-      const res = await fetch("https://api.github.com/user/repos?per_page=100&sort=updated", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/vnd.github.v3+json"
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setGitHubRepos(data);
-      } else {
-        console.error("Failed to fetch Github repos");
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoadingRepos(false);
-    }
-  };
-
-  const fetchGitHubUser = async (token: string) => {
-    try {
-      const res = await fetch("https://api.github.com/user", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/vnd.github.v3+json"
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setGitHubUser(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   useEffect(() => {
-    if (gitHubToken) {
-      fetchGitHubRepos(gitHubToken);
-      fetchGitHubUser(gitHubToken);
-    }
-  }, [gitHubToken]);
-
-  useEffect(() => {
-    const handleOAuthMessage = (event: MessageEvent) => {
-      const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
-        return;
-      }
-      if (event.data?.type === 'GITHUB_AUTH_SUCCESS') {
-        const token = event.data.token;
-        if (token) {
-          localStorage.setItem('xreef_github_token', token);
-          setGitHubToken(token);
-          setGitHubSaveStatus({ type: 'success', message: 'تم ربط حساب GitHub بنجاح!' });
-          setTimeout(() => setGitHubSaveStatus(null), 3000);
-        }
-      }
-    };
-    window.addEventListener('message', handleOAuthMessage);
-    return () => window.removeEventListener('message', handleOAuthMessage);
-  }, []);
-
-  const handleConnectGitHub = async () => {
-    try {
-      // Create a state object encoding the custom client keys (if any)
-      const stateObj = {
-        clientId: customGitClientId.trim() || undefined,
-        clientSecret: customGitClientSecret.trim() || undefined,
-        origin: window.location.origin
-      };
-      
-      const stateStr = btoa(JSON.stringify(stateObj));
-      
-      // Fetch the oauth URL from the server
-      const res = await fetch(`/api/auth/github/url?state=${encodeURIComponent(stateStr)}`);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch GitHub auth URL");
-      }
-      
-      const { url } = await res.json();
-      
-      const authWindow = window.open(
-        url,
-        'github_oauth_popup',
-        'width=600,height=700,status=yes,toolbar=no,menubar=no'
-      );
-      
-      if (!authWindow) {
-        setGitHubSaveStatus({ 
-          type: 'error', 
-          message: 'تم حظر النافذة المنبثقة! يرجى السماح بالمنبثقات لهذا الموقع للمتابعة.' 
-        });
-      }
-    } catch (e: any) {
-      console.error(e);
-      setGitHubSaveStatus({ 
-        type: 'error', 
-        message: e.message || 'فشل البدء بربط حساب GitHub' 
-      });
-    }
-  };
-
-  const handleDisconnectGitHub = () => {
-    localStorage.removeItem('xreef_github_token');
-    setGitHubToken(null);
-    setGitHubUser(null);
-    setGitHubRepos([]);
-    setSelectedRepo("");
-    setGitHubSaveStatus({ type: 'success', message: 'تم قطع اتصال GitHub بنجاح.' });
-    setTimeout(() => setGitHubSaveStatus(null), 3500);
-  };
-
-  const handleSaveToGitHub = async (imageUrl: string) => {
-    if (!gitHubToken) {
-      setIsGitHubModalOpen(true);
-      return;
-    }
-    
-    if (!selectedRepo) {
-      setGitHubSaveStatus({ type: 'error', message: 'يرجى اختيار مستودع (Repository) أولاً.' });
-      return;
-    }
-
-    setIsSavingToGitHub(true);
-    setGitHubSaveStatus(null);
-
-    try {
-      // 1. Fetch the image from the workspace proxy
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(imageUrl)}`;
-      const imageRes = await fetch(proxyUrl);
-      if (!imageRes.ok) throw new Error("فشل تحميل الصورة من الخادم");
-      
-      const blob = await imageRes.blob();
-      
-      // 2. Convert blob to Base64
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          // Extract base64 part only
-          resolve(base64data.split(',')[1]);
-        };
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(blob);
-      const base64Content = await base64Promise;
-
-      // 3. Prepare GitHub request to create or update file
-      const [owner, repoName] = selectedRepo.split('/');
-      const cleanPath = gitHubPath.startsWith('/') ? gitHubPath.substring(1) : gitHubPath;
-      const fileUrl = `https://api.github.com/repos/${owner}/${repoName}/contents/${cleanPath}`;
-
-      // Check if file already exists to get its SHA (required for updates)
-      let sha: string | undefined = undefined;
-      try {
-        const fileCheckRes = await fetch(fileUrl, {
-          headers: {
-            "Authorization": `Bearer ${gitHubToken}`,
-            "Accept": "application/vnd.github.v3+json"
-          }
-        });
-        if (fileCheckRes.ok) {
-          const fileData = await fileCheckRes.json();
-          sha = fileData.sha;
-        }
-      } catch (checkErr) {
-        console.log("File does not exist yet or direct API check failed (safely ignored):", checkErr);
-      }
-
-      // 4. Send PUT request to GitHub
-      const putRes = await fetch(fileUrl, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${gitHubToken}`,
-          "Content-Type": "application/json",
-          "Accept": "application/vnd.github.v3+json"
-        },
-        body: JSON.stringify({
-          message: "Uploaded image generated by XReef 2.0",
-          content: base64Content,
-          sha: sha
-        })
-      });
-
-      if (!putRes.ok) {
-        const errJson = await putRes.json();
-        throw new Error(errJson.message || "فشل رفع الصورة إلى مستودع GitHub");
-      }
-
-      setGitHubSaveStatus({ 
-        type: 'success', 
-        message: 'تم حفظ الصورة ورفعها إلى مستودع GitHub الخاص بك بنجاح! 🎉' 
-      });
-      setTimeout(() => setGitHubSaveStatus(null), 5000);
-    } catch (e: any) {
-      console.error(e);
-      setGitHubSaveStatus({ 
-        type: 'error', 
-        message: e.message || 'حدث خطأ أثناء الرفع إلى GitHub.' 
-      });
-    } finally {
-      setIsSavingToGitHub(false);
-    }
-  };
-
-  useEffect(() => {
-    initAuth(
-      () => setNeedsDriveAuth(false),
-      () => setNeedsDriveAuth(true)
-    );
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthReady(true);
@@ -1082,103 +838,6 @@ export default function ProjectWorkspace() {
     }
   };
 
-  const handleSaveToDrive = async (imageUrl: string) => {
-    setIsSavingToDrive(true);
-    setDriveSavedSuccess(null);
-    try {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        setNeedsDriveAuth(true);
-        throw new Error("يجب تسجيل الدخول باستخدام حساب Google أولاً.");
-      }
-
-      const res = await fetch(imageUrl);
-      const blob = await res.blob();
-      
-      let folderId = null;
-      try {
-        const q = encodeURIComponent("name='Xreef' and mimeType='application/vnd.google-apps.folder' and trashed=false");
-        const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive`, {
-          headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-        const searchDat = await searchRes.json();
-        
-        if (searchDat.files && searchDat.files.length > 0) {
-          folderId = searchDat.files[0].id;
-        } else {
-          const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              name: 'Xreef',
-              mimeType: 'application/vnd.google-apps.folder'
-            })
-          });
-          const createDat = await createRes.json();
-          folderId = createDat.id;
-        }
-      } catch (err) {
-        console.error("Error finding/creating folder", err);
-      }
-
-      let metadata: any = {
-        name: `Nano_Banana_${Date.now()}.png`,
-        mimeType: 'image/png'
-      };
-      if (folderId) {
-        metadata.parents = [folderId];
-      }
-
-      let form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', blob);
-
-      let driveRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: form
-      });
-
-      if (!driveRes.ok) {
-        // Fallback to root folder if custom folder fails
-        delete metadata.parents;
-        form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', blob);
-        
-        driveRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: form
-        });
-        
-        if (!driveRes.ok) {
-           const errorText = await driveRes.text();
-           throw new Error("فشل الحفظ: " + errorText);
-        } else {
-           setDriveSavedSuccess("تم الحفظ في ملفات Drive (مساحتك العامة)");
-           setTimeout(() => setDriveSavedSuccess(null), 3000);
-           return;
-        }
-      }
-      
-      setDriveSavedSuccess("تم الحفظ في مساحة جوجل درايف بنجاح!");
-      setTimeout(() => setDriveSavedSuccess(null), 3000);
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || "حدث خطأ غير معروف");
-    } finally {
-      setIsSavingToDrive(false);
-    }
-  };
-
   const handleUseAsInput = (url: string) => {
     setImageFiles(prev => [...prev, url].slice(0, 14));
     setSelectedImage(null);
@@ -1279,47 +938,6 @@ export default function ProjectWorkspace() {
         }
       `}</style>
 
-      {/* Drive Auth Modal */}
-      {needsDriveAuth && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 text-right" dir="rtl" onClick={() => setNeedsDriveAuth(false)}>
-          <div className="bg-[#111] p-6 rounded-3xl border border-emerald-500/30 max-w-sm w-full text-center space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/20">
-              <Folder className="w-8 h-8 text-emerald-500" />
-            </div>
-            <h3 className="text-xl font-bold text-white">متطلب Google Drive</h3>
-            <p className="text-sm text-neutral-400 leading-relaxed">لتمكين ميزة حفظ الصور مباشرة في مجلدك الخاص في Google Drive، يرجى الاستمرار وربط حسابك.</p>
-            <div className="pt-2 space-y-2">
-              {authError && <p className="text-xs text-red-400 mb-2">{authError}</p>}
-              <button disabled={isAuthLoading} onClick={async () => {
-                setIsAuthLoading(true);
-                setAuthError(null);
-                try {
-                  await signInWithGoogle();
-                  setNeedsDriveAuth(false);
-                } catch(err: any) {
-                  if (err.code === 'auth/popup-closed-by-user') {
-                    setAuthError("تم إغلاق النافذة قبل اكتمال التسجيل. يرجى المحاولة مرة أخرى.");
-                  } else if (err.code === 'auth/admin-restricted-operation') {
-                    setAuthError("العملية مقيدة. تأكد من إعدادات نطاق OAuth في Google Cloud.");
-                  } else {
-                    setAuthError("حدث خطأ أثناء تسجيل الدخول بحساب Google.");
-                  }
-                  console.error(err);
-                } finally {
-                  setIsAuthLoading(false);
-                }
-              }} className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors shadow-lg flex justify-center items-center gap-2">
-                {isAuthLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-                ربط حساب Google
-              </button>
-              <button onClick={() => setNeedsDriveAuth(false)} className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-colors">
-                إلغاء
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Auth Modal */}
       {isAuthModalOpen && !user && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setIsAuthModalOpen(false)}>
@@ -1368,187 +986,7 @@ export default function ProjectWorkspace() {
       )}
 
 
-      {/* GitHub Integration Modal */}
-      {isGitHubModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 text-right" dir="rtl" onClick={() => setIsGitHubModalOpen(false)}>
-          <div className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg p-6 space-y-6 relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neutral-800 via-zinc-600 to-neutral-800"></div>
-            
-            <button className="absolute top-6 left-6 text-neutral-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-colors" onClick={() => setIsGitHubModalOpen(false)}>
-              <X className="w-5 h-5" />
-            </button>
 
-            <h3 className="text-xl font-bold text-white flex items-center gap-3 pb-4 border-b border-white/5">
-              <Github className="w-6 h-6 text-white" />
-              <span>تكامل GitHub ومستودعات الأكواد</span>
-            </h3>
-
-            {gitHubSaveStatus && (
-              <div className={`p-4 rounded-xl text-sm border ${
-                gitHubSaveStatus.type === 'success' 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' 
-                  : 'bg-red-500/10 border-red-500/20 text-red-300'
-              }`}>
-                {gitHubSaveStatus.message}
-              </div>
-            )}
-
-            {!gitHubToken ? (
-              <div className="space-y-6">
-                <p className="text-sm text-neutral-300 leading-relaxed font-sans">
-                  قم بربط حسابك في GitHub لتتمكن من حفظ صورك وإبداعاتك المعمارية ونشرها مباشرة في مستودعاتك البرمجية (Repositories) كملفات جاهزة للاستخدام في أعمالك ومواقعك.
-                </p>
-
-                <div className="bg-neutral-900/50 p-4 rounded-2xl border border-white/5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-400">خيارات مطور البرمجيات المتقدمة</span>
-                    <button 
-                      onClick={() => setShowGitHubConfig(!showGitHubConfig)} 
-                      type="button"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer transition-colors"
-                    >
-                      {showGitHubConfig ? "إخفاء التفاصيل ▴" : "تعديل Client ID مخصص ▾"}
-                    </button>
-                  </div>
-
-                  {showGitHubConfig && (
-                    <div className="space-y-3 pt-3 border-t border-white/5">
-                      <p className="text-[11px] text-neutral-500 leading-relaxed">
-                        بشكل افتراضي، سيستخدم الخادم إعدادات GitHub المكونة في ملفات النظام البيئية. إذا كنت ترغب في استخدام تطبيق OAuth مخصص لك في بوابة مطوري GitHub، يمكنك إدخال مفاتيحك هنا وسيتم معالجتها تلقائياً.
-                      </p>
-                      <div className="space-y-1">
-                        <label className="block text-[11px] text-neutral-400">Client ID المخصص</label>
-                        <input 
-                          type="text" 
-                          value={customGitClientId} 
-                          onChange={(e) => {
-                            setCustomGitClientId(e.target.value);
-                            localStorage.setItem('xreef_github_custom_client_id', e.target.value);
-                          }} 
-                          placeholder="مثلاً: 25df8b..." 
-                          className="w-full bg-[#16161a] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50 text-left font-mono" 
-                          dir="ltr"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="block text-[11px] text-neutral-400">Client Secret المخصص</label>
-                        <input 
-                          type="password" 
-                          value={customGitClientSecret} 
-                          onChange={(e) => {
-                            setCustomGitClientSecret(e.target.value);
-                            localStorage.setItem('xreef_github_custom_client_secret', e.target.value);
-                          }} 
-                          placeholder="مثلاً: d83ca91..." 
-                          className="w-full bg-[#16161a] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500/50 text-left font-mono" 
-                          dir="ltr"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-2">
-                  <button 
-                    onClick={handleConnectGitHub} 
-                    className="w-full flex items-center justify-center gap-3 bg-white hover:bg-neutral-250 text-black py-3.5 rounded-2xl font-bold transition-all shadow-xl hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    <Github className="w-5 h-5" />
-                    <span>المتابعة وربط حساب GitHub</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6 border-t border-white/5 pt-4">
-                {gitHubUser && (
-                  <div className="flex items-center gap-4 bg-neutral-900/60 p-4 rounded-2xl border border-white/5">
-                    <img 
-                      src={gitHubUser.avatar_url} 
-                      alt="Avatar" 
-                      className="w-12 h-12 rounded-full border-2 border-white/10 shadow-md" 
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white text-sm truncate">{gitHubUser.name || gitHubUser.login}</p>
-                      <p className="text-xs text-indigo-400 truncate" dir="ltr">@{gitHubUser.login}</p>
-                    </div>
-                    <button 
-                      onClick={handleDisconnectGitHub} 
-                      className="text-xs text-red-400 hover:text-red-350 bg-red-500/5 hover:bg-red-500/10 px-3 py-2 rounded-xl transition-colors border border-red-500/10"
-                    >
-                      إلغاء الربط
-                    </button>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-neutral-300">أختر مستودع GitHub (Repository)</label>
-                    {isLoadingRepos ? (
-                      <div className="flex items-center gap-2 text-xs text-neutral-400 py-3">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
-                        <span>جاري جلب مستودعاتك الخاصة من GitHub...</span>
-                      </div>
-                    ) : (
-                      <select 
-                        value={selectedRepo} 
-                        onChange={(e) => {
-                          setSelectedRepo(e.target.value);
-                          localStorage.setItem('xreef_github_repo', e.target.value);
-                        }} 
-                        className="w-full bg-[#16161a] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50"
-                      >
-                        <option value="">-- اختر مستودع --</option>
-                        {gitHubRepos.map((repo: any) => (
-                          <option key={repo.id} value={repo.full_name}>
-                            {repo.full_name} {repo.private ? '(🔒 خاص)' : '(🌐 عام)'}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-neutral-300">مسار الملف النهائي داخل المستودع</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        value={gitHubPath} 
-                        onChange={(e) => setGitHubPath(e.target.value)} 
-                        placeholder="مثال: main_assets/design1.png" 
-                        className="w-full bg-[#16161a] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 text-left font-mono" 
-                        dir="ltr"
-                      />
-                    </div>
-                    <p className="text-[10px] text-neutral-550 leading-relaxed">تنبيه: سيتم حفظ الصورة في المسار المحدد. في حال كان هناك ملف بنفس الاسم، سيقوم النظام باستبداله وحفظه كملف جديد محدث (Commit).</p>
-                  </div>
-                </div>
-
-                {imageToSaveToGit && (
-                  <div className="pt-2">
-                    <button 
-                      onClick={() => handleSaveToGitHub(imageToSaveToGit)} 
-                      disabled={isSavingToGitHub || !selectedRepo} 
-                      className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3.5 rounded-2xl font-bold transition-all shadow-xl active:scale-[0.99]"
-                    >
-                      {isSavingToGitHub ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>جاري ترميز ورفع الصورة إلى GitHub...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Github className="w-5 h-5" />
-                          <span>حفظ الصورة وحفظ نسخة الآن (Push to GitHub)</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Fullscreen Image Modal */}
       {selectedImage && (
@@ -1562,32 +1000,7 @@ export default function ProjectWorkspace() {
           </div>
 
           <div className="w-full max-w-3xl space-y-4 shrink-0 z-10" onClick={(e) => e.stopPropagation()}>
-            {getPromptForUrl(selectedImage) && (
-              <div className="bg-[#111116]/90 border border-white/10 rounded-2xl p-4 text-right backdrop-blur-md shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4" dir="rtl">
-                <div className="flex-1 space-y-1">
-                  <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider flex items-center gap-1.5 select-none">
-                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-indigo-400" /> وصف التوليد المستخدم لهذه الصورة
-                  </span>
-                  <p className="text-xs text-neutral-300 font-sans leading-relaxed selection:bg-indigo-600/40" dir="auto">
-                    {getPromptForUrl(selectedImage)}
-                  </p>
-                </div>
-                <div className="flex gap-2 shrink-0 w-full md:w-auto">
-                  <button 
-                    onClick={() => handleCopyPrompt(getPromptForUrl(selectedImage))} 
-                    className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 rounded-xl text-xs font-semibold transition-colors"
-                  >
-                    <Save className="w-4 h-4" /> نسخ
-                  </button>
-                  <button 
-                    onClick={() => handleApplyPrompt(getPromptForUrl(selectedImage))} 
-                    className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-transform active:scale-[0.97] duration-200"
-                  >
-                    <Wand2 className="w-4 h-4" /> تطبيق كالوصف الحالي
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Removed image generation description block */}
 
             <div className="flex items-center gap-2.5 flex-wrap justify-center w-full">
               <button onClick={() => handleUseAsInput(selectedImage)} className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md">
@@ -1600,12 +1013,7 @@ export default function ProjectWorkspace() {
               <button onClick={() => { setSelectedImage(null); openCropModal(selectedImage); }} className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md">
                  <Crop className="w-4 h-4" /> قص
               </button>
-              <button onClick={() => handleSaveToDrive(selectedImage)} disabled={isSavingToDrive} className="flex items-center gap-2 bg-emerald-600/90 hover:bg-emerald-500 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-emerald-500/50 backdrop-blur-md disabled:opacity-50">
-                 {isSavingToDrive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Folder className="w-4 h-4" />} درايف
-              </button>
-              <button onClick={() => { setImageToSaveToGit(selectedImage); setIsGitHubModalOpen(true); }} className="flex items-center gap-2 bg-neutral-950/80 hover:bg-neutral-800 border border-white/10 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl backdrop-blur-md">
-                 <Github className="w-4 h-4" /> جيت هاب
-              </button>
+
               <button onClick={() => handleDownload(selectedImage)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-medium transition-all shadow-xl border border-blue-500/50 backdrop-blur-md">
                  <Download className="w-5 h-5" /> تنزيل
               </button>
@@ -2108,7 +1516,7 @@ export default function ProjectWorkspace() {
                          </div>
 
                          {/* Prompt display inside Card */}
-                         {getPromptForUrl(url) && (
+                         {false && (
                            <div className="px-4 text-right cursor-auto pointer-events-auto flex-1 flex flex-col justify-center" dir="rtl" onClick={(e) => e.stopPropagation()}>
                              <div className="bg-[#0c0c12]/92 border border-white/15 rounded-2xl p-3.5 backdrop-blur-md shadow-xl flex flex-col gap-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
                                <div className="flex items-center justify-between text-[10px] text-neutral-400 border-b border-white/5 pb-1">
@@ -2136,21 +1544,13 @@ export default function ProjectWorkspace() {
                             <button onClick={() => openTemplateModal(url)} className="flex items-center justify-center w-10 h-10 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-indigo-400/30 backdrop-blur-sm" title="وضع في قالب">
                               <LayoutTemplate className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => handleSaveToDrive(url)} disabled={isSavingToDrive} className="flex items-center gap-2 bg-emerald-600/90 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-emerald-400/30 backdrop-blur-sm disabled:opacity-50" title="حفظ في Google Drive">
-                              {isSavingToDrive ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Folder className="w-3.5 h-3.5" />} درايف
-                            </button>
-                            <button onClick={() => { setImageToSaveToGit(url); setIsGitHubModalOpen(true); }} className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-750 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-white/5 backdrop-blur-sm" title="حفظ في GitHub">
-                            <Github className="w-3.5 h-3.5" /> جيت هاب
-                          </button>
+
+
                           <button onClick={() => handleDownload(url)} className="flex items-center justify-center w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-white/10 backdrop-blur-sm" title="تنزيل">
                               <Download className="w-3.5 h-3.5" />
                             </button>
                          </div>
-                         {driveSavedSuccess && (
-                            <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] text-green-300 bg-green-500/20 border border-green-500/30 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md whitespace-nowrap">
-                              {driveSavedSuccess}
-                            </div>
-                         )}
+
                        </div>
                     </motion.div>
                   ))}

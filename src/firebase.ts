@@ -14,7 +14,6 @@ export const storage = getStorage(app);
 
 // Auth Methods
 const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 
 let currentAccessToken: string | null = null;
 
@@ -42,19 +41,6 @@ export enum OperationType {
 export function handleFirestoreError(error: any, operation: OperationType, path: string) {
   console.error(`Firestore error during ${operation} at ${path}:`, error);
 }
-
-// Drive auth helpers
-export const getAccessToken = async () => {
-  return currentAccessToken;
-};
-
-export const initAuth = (onAuthSuccess: () => void, onAuthRequired: () => void) => {
-  if (currentAccessToken) {
-    onAuthSuccess();
-  } else {
-    onAuthRequired();
-  }
-};
 
 /**
  * Uploads an image file to Firebase Storage for the XReef project.
