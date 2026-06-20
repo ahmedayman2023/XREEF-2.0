@@ -208,21 +208,61 @@ async function startServer() {
         throw (settledResults[0] as PromiseRejectedResult).reason;
       }
 
-      const outputs = results.map((output: any) => {
-        let imageUrl = output;
-        if (output && typeof output.url === 'function') {
-          imageUrl = output.url().toString();
-        } else if (Array.isArray(output) && output.length > 0) {
-          if (typeof output[0].url === 'function') {
-            imageUrl = output[0].url().toString();
-          } else {
-            imageUrl = output[0];
-          }
-        }
-        return imageUrl;
-      });
+      const outputs = await Promise.all(
+        results.map(async (output: any) => {
+          if (!output) return "";
 
-      res.json({ outputs });
+          // If it's a string starting with http, https or data:, return it directly
+          if (typeof output === "string" && (output.startsWith("http://") || output.startsWith("https://") || output.startsWith("data:"))) {
+            return output;
+          }
+
+          // If it's an array, look inside the first element
+          if (Array.isArray(output) && output.length > 0) {
+            const first = output[0];
+            if (typeof first === "string" && (first.startsWith("http://") || first.startsWith("https://") || first.startsWith("data:"))) {
+              return first;
+            }
+            if (first && typeof first.url === 'function') {
+              return first.url().toString();
+            }
+          }
+
+          // Handle case where output has a .url() method
+          if (output && typeof output.url === 'function') {
+            try {
+              return output.url().toString();
+            } catch (e) {
+              console.warn("Failed to call output.url():", e);
+            }
+          }
+
+          // Handle ReadableStream (like FileOutput)
+          if (output && typeof output.getReader === "function") {
+            try {
+              const reader = output.getReader();
+              const chunks: Uint8Array[] = [];
+              let done = false;
+              while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                if (value) {
+                  chunks.push(value);
+                }
+              }
+              const buffer = Buffer.concat(chunks);
+              const base64 = buffer.toString("base64");
+              return `data:image/jpeg;base64,${base64}`;
+            } catch (e) {
+              console.error("Error reading output stream:", e);
+            }
+          }
+
+          return "";
+        })
+      );
+
+      res.json({ outputs: outputs.filter(Boolean) });
     } catch (error: any) {
       console.error("Error generating image:", error);
       if (error.logs) {
