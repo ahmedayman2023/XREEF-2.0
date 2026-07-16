@@ -1,14 +1,65 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Image as ImageIcon, Upload, X, Download, Sparkles, ChevronDown, ChevronUp, Maximize2, Clock, Trash2, Crop, Zap, ImagePlus, Library, Edit2, Plus, Save, LayoutTemplate, Settings2, LogIn, LogOut, Mail, Lock, UserPlus, ArrowLeft, LifeBuoy, Wand2, Folder, Video } from "lucide-react";
-import ReactCrop, { type Crop as CropType } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
-import { auth, db, storage, signInWithGoogle, signInWithEmail, signUpWithEmail, logOut, handleFirestoreError, OperationType } from '../firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, doc, setDoc, onSnapshot, query, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { motion, AnimatePresence } from 'motion/react';
-import Scene3D from './Scene3D';
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Loader2,
+  Image as ImageIcon,
+  Upload,
+  X,
+  Download,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Clock,
+  Trash2,
+  Crop,
+  Zap,
+  ImagePlus,
+  Library,
+  Edit2,
+  Plus,
+  Save,
+  LayoutTemplate,
+  Settings2,
+  LogIn,
+  LogOut,
+  Mail,
+  Lock,
+  UserPlus,
+  ArrowLeft,
+  LifeBuoy,
+  Wand2,
+  Folder,
+  Video,
+  Copy,
+} from "lucide-react";
+import ReactCrop, { type Crop as CropType } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import {
+  auth,
+  db,
+  storage,
+  signInWithGoogle,
+  signInWithEmail,
+  signUpWithEmail,
+  logOut,
+  handleFirestoreError,
+  OperationType,
+} from "../firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
+import {
+  collection,
+  doc,
+  setDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { motion, AnimatePresence } from "motion/react";
+import Scene3D from "./Scene3D";
 
 interface HistoryItem {
   id: string;
@@ -21,57 +72,116 @@ const DEFAULT_PROMPT_BANK = [
   {
     category: "خيال علمي (Sci-Fi)",
     prompts: [
-      { title: "مدينة مستقبلية", prompt: "A futuristic cyberpunk city at night, neon lights, flying cars, highly detailed, 8k resolution, cinematic lighting, Unreal Engine 5 render" },
-      { title: "رائد فضاء", prompt: "A highly detailed portrait of an astronaut in a futuristic glowing suit, exploring an alien planet with bioluminescent flora, cinematic, hyperrealistic" },
-      { title: "محطة فضائية", prompt: "A massive space station orbiting a gas giant, highly detailed, cinematic lighting, sci-fi concept art, 8k" }
-    ]
+      {
+        title: "مدينة مستقبلية",
+        prompt:
+          "A futuristic cyberpunk city at night, neon lights, flying cars, highly detailed, 8k resolution, cinematic lighting, Unreal Engine 5 render",
+      },
+      {
+        title: "رائد فضاء",
+        prompt:
+          "A highly detailed portrait of an astronaut in a futuristic glowing suit, exploring an alien planet with bioluminescent flora, cinematic, hyperrealistic",
+      },
+      {
+        title: "محطة فضائية",
+        prompt:
+          "A massive space station orbiting a gas giant, highly detailed, cinematic lighting, sci-fi concept art, 8k",
+      },
+    ],
   },
   {
     category: "طبيعة ومناظر (Nature)",
     prompts: [
-      { title: "غابة سحرية", prompt: "A magical enchanted forest with glowing mushrooms, ancient giant trees, ethereal mist, sun rays filtering through leaves, fantasy concept art, trending on ArtStation" },
-      { title: "جبال جليدية", prompt: "Majestic snow-capped mountains at sunset, a crystal clear lake reflecting the sky, aurora borealis, photorealistic, National Geographic photography" },
-      { title: "شاطئ استوائي", prompt: "A beautiful tropical beach at golden hour, crystal clear turquoise water, palm trees, white sand, highly detailed, photorealistic" }
-    ]
+      {
+        title: "غابة سحرية",
+        prompt:
+          "A magical enchanted forest with glowing mushrooms, ancient giant trees, ethereal mist, sun rays filtering through leaves, fantasy concept art, trending on ArtStation",
+      },
+      {
+        title: "جبال جليدية",
+        prompt:
+          "Majestic snow-capped mountains at sunset, a crystal clear lake reflecting the sky, aurora borealis, photorealistic, National Geographic photography",
+      },
+      {
+        title: "شاطئ استوائي",
+        prompt:
+          "A beautiful tropical beach at golden hour, crystal clear turquoise water, palm trees, white sand, highly detailed, photorealistic",
+      },
+    ],
   },
   {
     category: "شخصيات (Characters)",
     prompts: [
-      { title: "محارب ساموراي", prompt: "A fierce cyberpunk samurai warrior with a glowing katana, wearing high-tech armor, standing in the rain, dramatic lighting, highly detailed character design" },
-      { title: "أميرة خيالية", prompt: "A beautiful elven princess with silver hair, wearing an intricate elegant gown, standing in a magical garden, soft lighting, ethereal, fantasy portrait" },
-      { title: "ساحر غامض", prompt: "A mysterious wizard casting a glowing spell, dark robes, glowing eyes, magical particles, highly detailed, fantasy concept art" }
-    ]
+      {
+        title: "محارب ساموراي",
+        prompt:
+          "A fierce cyberpunk samurai warrior with a glowing katana, wearing high-tech armor, standing in the rain, dramatic lighting, highly detailed character design",
+      },
+      {
+        title: "أميرة خيالية",
+        prompt:
+          "A beautiful elven princess with silver hair, wearing an intricate elegant gown, standing in a magical garden, soft lighting, ethereal, fantasy portrait",
+      },
+      {
+        title: "ساحر غامض",
+        prompt:
+          "A mysterious wizard casting a glowing spell, dark robes, glowing eyes, magical particles, highly detailed, fantasy concept art",
+      },
+    ],
   },
   {
     category: "أنمي (Anime)",
     prompts: [
-      { title: "مشهد كلاسيكي", prompt: "Studio Ghibli style anime scenery, a cozy small bakery in a quiet Japanese town, warm sunlight, highly detailed, beautiful colors, nostalgic feeling" },
-      { title: "شخصية قتالية", prompt: "Epic anime fight scene, a powerful hero with glowing aura, dynamic pose, shattered ground, intense action, colorful energy blasts, 4k" },
-      { title: "فتاة الأنمي", prompt: "A beautiful anime girl with long flowing hair, wearing a school uniform, standing under a cherry blossom tree, petals falling, soft lighting, highly detailed" }
-    ]
+      {
+        title: "مشهد كلاسيكي",
+        prompt:
+          "Studio Ghibli style anime scenery, a cozy small bakery in a quiet Japanese town, warm sunlight, highly detailed, beautiful colors, nostalgic feeling",
+      },
+      {
+        title: "شخصية قتالية",
+        prompt:
+          "Epic anime fight scene, a powerful hero with glowing aura, dynamic pose, shattered ground, intense action, colorful energy blasts, 4k",
+      },
+      {
+        title: "فتاة الأنمي",
+        prompt:
+          "A beautiful anime girl with long flowing hair, wearing a school uniform, standing under a cherry blossom tree, petals falling, soft lighting, highly detailed",
+      },
+    ],
   },
   {
     category: "تصميم داخلي (Interior)",
     prompts: [
-      { title: "غرفة معيشة حديثة", prompt: "A modern minimalist living room with large windows, natural light, cozy furniture, indoor plants, architectural photography, highly detailed" },
-      { title: "مقهى دافئ", prompt: "A cozy rustic coffee shop interior, warm lighting, wooden furniture, espresso machine, people reading, highly detailed, photorealistic" }
-    ]
-  }
+      {
+        title: "غرفة معيشة حديثة",
+        prompt:
+          "A modern minimalist living room with large windows, natural light, cozy furniture, indoor plants, architectural photography, highly detailed",
+      },
+      {
+        title: "مقهى دافئ",
+        prompt:
+          "A cozy rustic coffee shop interior, warm lighting, wooden furniture, espresso machine, people reading, highly detailed, photorealistic",
+      },
+    ],
+  },
 ];
 
 const getDisplayUrl = (url: string) => {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.includes('firebasestorage.googleapis.com')) {
+  if (!url) return "";
+  if (
+    url.startsWith("data:") ||
+    url.includes("firebasestorage.googleapis.com")
+  ) {
     return url;
   }
   return `/api/proxy?url=${encodeURIComponent(url)}`;
 };
 
 export default function ProjectWorkspace() {
-  const { projectId } = useParams();
+  const { employeeId, projectId } = useParams();
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
-  
+
   const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,13 +192,21 @@ export default function ProjectWorkspace() {
   // Advanced Settings State
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [resolution, setResolution] = useState("1K");
-  
+  const [referenceType, setReferenceType] = useState<"style" | "structure" | "balanced">("structure");
+  const [referenceStrength, setReferenceStrength] = useState<number>(0.7);
+
   // Fullscreen State
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Cropping State
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [crop, setCrop] = useState<CropType>({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
+  const [crop, setCrop] = useState<CropType>({
+    unit: "%",
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  });
   const [completedCrop, setCompletedCrop] = useState<any>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -111,25 +229,39 @@ export default function ProjectWorkspace() {
 
   // Enhance Prompt State
   const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false);
-  const [enhancedPromptResult, setEnhancedPromptResult] = useState<string | null>(null);
+  const [enhancedPromptResult, setEnhancedPromptResult] = useState<
+    string | null
+  >(null);
 
   // Prompt Bank State
   const [isPromptBankOpen, setIsPromptBankOpen] = useState(false);
   const [promptBank, setPromptBank] = useState<any[]>([]);
   const [isPromptBankEditMode, setIsPromptBankEditMode] = useState(false);
-  const [editingPrompt, setEditingPrompt] = useState<{catIdx: number, promptIdx: number, title: string, prompt: string, selectCategory?: boolean} | null>(null);
+  const [editingPrompt, setEditingPrompt] = useState<{
+    catIdx: number;
+    promptIdx: number;
+    title: string;
+    prompt: string;
+    selectCategory?: boolean;
+  } | null>(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
   // Template State
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [templateImage, setTemplateImage] = useState<string | null>(() => {
-    try { return localStorage.getItem('xreef_template_image'); } catch { return null; }
+    try {
+      return localStorage.getItem("xreef_template_image");
+    } catch {
+      return null;
+    }
   });
   const [templateSettings, setTemplateSettings] = useState(() => {
     try {
-      const saved = localStorage.getItem('xreef_template_settings');
-      return saved ? JSON.parse(saved) : { scale: 70, offsetX: 55, offsetY: 50 };
+      const saved = localStorage.getItem("xreef_template_settings");
+      return saved
+        ? JSON.parse(saved)
+        : { scale: 70, offsetX: 55, offsetY: 50 };
     } catch {
       return { scale: 70, offsetX: 55, offsetY: 50 };
     }
@@ -137,8 +269,7 @@ export default function ProjectWorkspace() {
   const [imageToTemplate, setImageToTemplate] = useState<string | null>(null);
   const templateCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [sidebarMode, setSidebarMode] = useState<'generate'>('generate');
-
+  const [sidebarMode, setSidebarMode] = useState<"generate">("generate");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -151,73 +282,91 @@ export default function ProjectWorkspace() {
   useEffect(() => {
     if (!isAuthReady) return;
 
-    if (user) {
+    if (user && employeeId) {
       // Fetch History
-      const historyRef = collection(db, `users/${user.uid}/projects/${projectId}/history`);
-      const qHistory = query(historyRef, orderBy('timestamp', 'desc'));
-      const unsubHistory = onSnapshot(qHistory, (snapshot) => {
-        const historyData: HistoryItem[] = [];
-        snapshot.forEach((doc) => {
-          historyData.push(doc.data() as HistoryItem);
-        });
-        setHistory(historyData);
-      }, (error) => {
-        handleFirestoreError(error, OperationType.GET, `users/${user.uid}/projects/${projectId}/history`);
-      });
+      const historyRef = collection(
+        db,
+        `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+      );
+      const qHistory = query(historyRef, orderBy("timestamp", "desc"));
+      const unsubHistory = onSnapshot(
+        qHistory,
+        (snapshot) => {
+          const historyData: HistoryItem[] = [];
+          snapshot.forEach((doc) => {
+            historyData.push(doc.data() as HistoryItem);
+          });
+          setHistory(historyData);
+        },
+        (error) => {
+          handleFirestoreError(
+            error,
+            OperationType.GET,
+            `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+          );
+        },
+      );
 
       // Fetch Project Details
-      let unsubProject = () => {};
-      const folderRef = doc(db, `users/${user.uid}/folders`, projectId!);
-      const unsubFolder = onSnapshot(folderRef, (docSnap) => {
-        if (docSnap.exists()) {
-          setProjectName(docSnap.data().folderName || docSnap.data().name);
-          setDbImageCount(docSnap.data().imageCount ?? 0);
-        } else {
-          // Fallback to legacy projects collection
-          const projectRef = doc(db, `users/${user.uid}/projects`, projectId!);
-          unsubProject = onSnapshot(projectRef, (projSnap) => {
-            if (projSnap.exists()) {
-              setProjectName(projSnap.data().name || projSnap.data().folderName);
-              setDbImageCount(projSnap.data().imageCount ?? 0);
-            }
-          }, (error) => {
-            console.error("Error fetching legacy project details:", error);
-          });
-        }
-      }, (error) => {
-        console.error("Error fetching folder details:", error);
-      });
+      const projectRef = doc(
+        db,
+        `users/${user.uid}/employees/${employeeId}/projects`,
+        projectId!,
+      );
+      const unsubProject = onSnapshot(
+        projectRef,
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setProjectName(docSnap.data().folderName || docSnap.data().name);
+            setDbImageCount(docSnap.data().imageCount ?? 0);
+          }
+        },
+        (error) => {
+          console.error("Error fetching project details:", error);
+        },
+      );
 
       // Fetch Prompt Bank
       const promptBankRef = collection(db, `users/${user.uid}/promptBank`);
-      const unsubPromptBank = onSnapshot(promptBankRef, (snapshot) => {
-        const bankData: any[] = [];
-        snapshot.forEach((doc) => {
-          bankData.push({ id: doc.id, ...doc.data() });
-        });
-        if (bankData.length > 0) {
-          setPromptBank(bankData);
-        } else {
-          setPromptBank(DEFAULT_PROMPT_BANK);
-          DEFAULT_PROMPT_BANK.forEach(async (cat, idx) => {
-            try {
-              const catId = `cat_${Date.now()}_${idx}`;
-              await setDoc(doc(db, `users/${user.uid}/promptBank`, catId), {
-                ...cat,
-                userId: user.uid
-              });
-            } catch (err) {
-               handleFirestoreError(err, OperationType.CREATE, `users/${user.uid}/promptBank`);
-            }
+      const unsubPromptBank = onSnapshot(
+        promptBankRef,
+        (snapshot) => {
+          const bankData: any[] = [];
+          snapshot.forEach((doc) => {
+            bankData.push({ id: doc.id, ...doc.data() });
           });
-        }
-      }, (error) => {
-        handleFirestoreError(error, OperationType.GET, `users/${user.uid}/promptBank`);
-      });
+          if (bankData.length > 0) {
+            setPromptBank(bankData);
+          } else {
+            setPromptBank(DEFAULT_PROMPT_BANK);
+            DEFAULT_PROMPT_BANK.forEach(async (cat, idx) => {
+              try {
+                const catId = `cat_${Date.now()}_${idx}`;
+                await setDoc(doc(db, `users/${user.uid}/promptBank`, catId), {
+                  ...cat,
+                  userId: user.uid,
+                });
+              } catch (err) {
+                handleFirestoreError(
+                  err,
+                  OperationType.CREATE,
+                  `users/${user.uid}/promptBank`,
+                );
+              }
+            });
+          }
+        },
+        (error) => {
+          handleFirestoreError(
+            error,
+            OperationType.GET,
+            `users/${user.uid}/promptBank`,
+          );
+        },
+      );
 
       return () => {
         unsubHistory();
-        unsubFolder();
         unsubProject();
         unsubPromptBank();
       };
@@ -225,7 +374,7 @@ export default function ProjectWorkspace() {
       try {
         const savedHistory = localStorage.getItem(`xreef_history_${projectId}`);
         setHistory(savedHistory ? JSON.parse(savedHistory) : []);
-        const savedBank = localStorage.getItem('xreef_prompt_bank');
+        const savedBank = localStorage.getItem("xreef_prompt_bank");
         setPromptBank(savedBank ? JSON.parse(savedBank) : DEFAULT_PROMPT_BANK);
       } catch (e) {
         setHistory([]);
@@ -235,20 +384,36 @@ export default function ProjectWorkspace() {
   }, [user, isAuthReady, projectId]);
 
   useEffect(() => {
-    if (user && projectId && dbImageCount !== null && history && history.length !== dbImageCount) {
-      const folderRef = doc(db, `users/${user.uid}/folders`, projectId);
+    if (
+      user &&
+      employeeId &&
+      projectId &&
+      dbImageCount !== null &&
+      history &&
+      history.length !== dbImageCount
+    ) {
+      const folderRef = doc(
+        db,
+        `users/${user.uid}/employees/${employeeId}/projects`,
+        projectId,
+      );
       updateDoc(folderRef, {
-        imageCount: history.length
-      }).then(() => {
-        setDbImageCount(history.length);
-      }).catch(err => {
-        console.error("Error updating imageCount:", err);
-      });
+        imageCount: history.length,
+      })
+        .then(() => {
+          setDbImageCount(history.length);
+        })
+        .catch((err) => {
+          console.error("Error updating imageCount:", err);
+        });
     }
-  }, [history.length, dbImageCount, user, projectId]);
+  }, [history.length, dbImageCount, user, employeeId, projectId]);
 
   useEffect(() => {
-    localStorage.setItem('xreef_template_settings', JSON.stringify(templateSettings));
+    localStorage.setItem(
+      "xreef_template_settings",
+      JSON.stringify(templateSettings),
+    );
   }, [templateSettings]);
 
   const handleGoogleAuth = async () => {
@@ -258,12 +423,18 @@ export default function ProjectWorkspace() {
       await signInWithGoogle();
       setIsAuthModalOpen(false);
     } catch (err: any) {
-      if (err.code === 'auth/operation-not-allowed') {
-        setAuthError("تسجيل الدخول بحساب Google غير مفعل في لوحة تحكم Firebase.");
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        setAuthError("تم إغلاق النافذة قبل اكتمال التسجيل. يرجى المحاولة مرة أخرى.");
-      } else if (err.code === 'auth/admin-restricted-operation') {
-        setAuthError("العملية مقيدة. تأكد من إعدادات نطاق OAuth في Google Cloud.");
+      if (err.code === "auth/operation-not-allowed") {
+        setAuthError(
+          "تسجيل الدخول بحساب Google غير مفعل في لوحة تحكم Firebase.",
+        );
+      } else if (err.code === "auth/popup-closed-by-user") {
+        setAuthError(
+          "تم إغلاق النافذة قبل اكتمال التسجيل. يرجى المحاولة مرة أخرى.",
+        );
+      } else if (err.code === "auth/admin-restricted-operation") {
+        setAuthError(
+          "العملية مقيدة. تأكد من إعدادات نطاق OAuth في Google Cloud.",
+        );
       } else {
         setAuthError("حدث خطأ أثناء تسجيل الدخول بحساب Google.");
       }
@@ -273,10 +444,16 @@ export default function ProjectWorkspace() {
   };
 
   useEffect(() => {
-    if (!isTemplateModalOpen || !templateImage || !imageToTemplate || !templateCanvasRef.current) return;
+    if (
+      !isTemplateModalOpen ||
+      !templateImage ||
+      !imageToTemplate ||
+      !templateCanvasRef.current
+    )
+      return;
 
     const canvas = templateCanvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const tImg = new Image();
@@ -284,7 +461,7 @@ export default function ProjectWorkspace() {
     tImg.onload = () => {
       canvas.width = tImg.width;
       canvas.height = tImg.height;
-      
+
       // Draw template
       ctx.drawImage(tImg, 0, 0);
 
@@ -295,15 +472,16 @@ export default function ProjectWorkspace() {
         const ratio = gImg.height / gImg.width;
         const targetHeight = targetWidth * ratio;
 
-        const x = (tImg.width * templateSettings.offsetX) / 100 - (targetWidth / 2);
-        const y = (tImg.height * templateSettings.offsetY) / 100 - (targetHeight / 2);
+        const x =
+          (tImg.width * templateSettings.offsetX) / 100 - targetWidth / 2;
+        const y =
+          (tImg.height * templateSettings.offsetY) / 100 - targetHeight / 2;
 
         ctx.drawImage(gImg, x, y, targetWidth, targetHeight);
       };
       gImg.src = imageToTemplate;
     };
     tImg.src = templateImage;
-
   }, [templateImage, imageToTemplate, templateSettings, isTemplateModalOpen]);
 
   const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -314,7 +492,7 @@ export default function ProjectWorkspace() {
       const base64 = event.target?.result as string;
       setTemplateImage(base64);
       try {
-        localStorage.setItem('xreef_template_image', base64);
+        localStorage.setItem("xreef_template_image", base64);
       } catch (err) {
         console.warn("Template image too large for localStorage");
       }
@@ -324,8 +502,8 @@ export default function ProjectWorkspace() {
 
   const handleDownloadTemplate = () => {
     if (!templateCanvasRef.current) return;
-    const dataUrl = templateCanvasRef.current.toDataURL('image/png');
-    const link = document.createElement('a');
+    const dataUrl = templateCanvasRef.current.toDataURL("image/png");
+    const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `xreef-template-${Date.now()}.png`;
     document.body.appendChild(link);
@@ -339,31 +517,48 @@ export default function ProjectWorkspace() {
   };
 
   const handleSavePrompt = async () => {
-    if (!editingPrompt || !editingPrompt.title.trim() || !editingPrompt.prompt.trim()) return;
+    if (
+      !editingPrompt ||
+      !editingPrompt.title.trim() ||
+      !editingPrompt.prompt.trim()
+    )
+      return;
     const newBank = JSON.parse(JSON.stringify(promptBank));
     const cat = newBank[editingPrompt.catIdx];
-    
+
     if (editingPrompt.promptIdx === -1) {
-      cat.prompts.push({ title: editingPrompt.title, prompt: editingPrompt.prompt });
+      cat.prompts.push({
+        title: editingPrompt.title,
+        prompt: editingPrompt.prompt,
+      });
     } else {
-      cat.prompts[editingPrompt.promptIdx] = { title: editingPrompt.title, prompt: editingPrompt.prompt };
+      cat.prompts[editingPrompt.promptIdx] = {
+        title: editingPrompt.title,
+        prompt: editingPrompt.prompt,
+      };
     }
-    
+
     if (user && cat.id) {
       try {
         await setDoc(doc(db, `users/${user.uid}/promptBank`, cat.id), {
           category: cat.category,
           prompts: cat.prompts,
-          userId: user.uid
+          userId: user.uid,
         });
       } catch (err) {
-        handleFirestoreError(err, OperationType.UPDATE, `users/${user.uid}/promptBank`);
+        handleFirestoreError(
+          err,
+          OperationType.UPDATE,
+          `users/${user.uid}/promptBank`,
+        );
       }
     } else {
       setPromptBank(newBank);
-      localStorage.setItem('xreef_prompt_bank', JSON.stringify(newBank));
+      localStorage.setItem("xreef_prompt_bank", JSON.stringify(newBank));
     }
-    alert(`تم حفظ الوصف "${editingPrompt.title}" بنجاح في قسم "${cat.category}"! 🎉`);
+    alert(
+      `تم حفظ الوصف "${editingPrompt.title}" بنجاح في قسم "${cat.category}"! 🎉`,
+    );
     setEditingPrompt(null);
   };
 
@@ -374,7 +569,7 @@ export default function ProjectWorkspace() {
       promptIdx: -1,
       title: "",
       prompt: prompt,
-      selectCategory: true
+      selectCategory: true,
     });
   };
 
@@ -382,41 +577,52 @@ export default function ProjectWorkspace() {
     const newBank = JSON.parse(JSON.stringify(promptBank));
     const cat = newBank[catIdx];
     cat.prompts.splice(promptIdx, 1);
-    
+
     if (user && cat.id) {
       try {
         await setDoc(doc(db, `users/${user.uid}/promptBank`, cat.id), {
           category: cat.category,
           prompts: cat.prompts,
-          userId: user.uid
+          userId: user.uid,
         });
       } catch (err) {
-        handleFirestoreError(err, OperationType.UPDATE, `users/${user.uid}/promptBank`);
+        handleFirestoreError(
+          err,
+          OperationType.UPDATE,
+          `users/${user.uid}/promptBank`,
+        );
       }
     } else {
       setPromptBank(newBank);
-      localStorage.setItem('xreef_prompt_bank', JSON.stringify(newBank));
+      localStorage.setItem("xreef_prompt_bank", JSON.stringify(newBank));
     }
   };
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
-    
+
     if (user) {
       try {
         const catId = `cat_${Date.now()}`;
         await setDoc(doc(db, `users/${user.uid}/promptBank`, catId), {
           category: newCategoryName,
           prompts: [],
-          userId: user.uid
+          userId: user.uid,
         });
       } catch (err) {
-        handleFirestoreError(err, OperationType.CREATE, `users/${user.uid}/promptBank`);
+        handleFirestoreError(
+          err,
+          OperationType.CREATE,
+          `users/${user.uid}/promptBank`,
+        );
       }
     } else {
-      const newBank = [...promptBank, { category: newCategoryName, prompts: [] }];
+      const newBank = [
+        ...promptBank,
+        { category: newCategoryName, prompts: [] },
+      ];
       setPromptBank(newBank);
-      localStorage.setItem('xreef_prompt_bank', JSON.stringify(newBank));
+      localStorage.setItem("xreef_prompt_bank", JSON.stringify(newBank));
     }
     setNewCategoryName("");
     setIsAddingCategory(false);
@@ -424,18 +630,22 @@ export default function ProjectWorkspace() {
 
   const handleDeleteCategory = async (catIdx: number) => {
     const cat = promptBank[catIdx];
-    
+
     if (user && cat.id) {
       try {
         await deleteDoc(doc(db, `users/${user.uid}/promptBank`, cat.id));
       } catch (err) {
-        handleFirestoreError(err, OperationType.DELETE, `users/${user.uid}/promptBank`);
+        handleFirestoreError(
+          err,
+          OperationType.DELETE,
+          `users/${user.uid}/promptBank`,
+        );
       }
     } else {
       const newBank = JSON.parse(JSON.stringify(promptBank));
       newBank.splice(catIdx, 1);
       setPromptBank(newBank);
-      localStorage.setItem('xreef_prompt_bank', JSON.stringify(newBank));
+      localStorage.setItem("xreef_prompt_bank", JSON.stringify(newBank));
     }
   };
 
@@ -446,12 +656,12 @@ export default function ProjectWorkspace() {
     setEnhancedPromptResult(null);
 
     try {
-      const response = await fetch('/api/translate-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+      const response = await fetch("/api/translate-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           prompt: prompt.trim(),
-          image: imageFiles.length > 0 ? imageFiles[0] : null
+          image: imageFiles.length > 0 ? imageFiles[0] : null,
         }),
       });
       let data;
@@ -461,23 +671,34 @@ export default function ProjectWorkspace() {
       } else {
         const text = await response.text();
         console.error("Non-JSON response:", text);
-        if (text.includes("Please wait while your application starts") || text.includes("application is starting")) {
-          throw new Error("الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.");
+        if (
+          text.includes("Please wait while your application starts") ||
+          text.includes("application is starting")
+        ) {
+          throw new Error(
+            "الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.",
+          );
         }
         if (response.status === 405) {
-          throw new Error("حدث خطأ في الاتصال بالخادم (405). يرجى تحديث الصفحة والمحاولة مرة أخرى.");
+          throw new Error(
+            "حدث خطأ في الاتصال بالخادم (405). يرجى تحديث الصفحة والمحاولة مرة أخرى.",
+          );
         }
-        throw new Error(`الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}`);
+        throw new Error(
+          `الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}`,
+        );
       }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to enhance prompt');
+        throw new Error(data.error || "Failed to enhance prompt");
       }
       setEnhancedPromptResult(data.enhancedPrompt);
     } catch (err: any) {
       console.error("Enhance prompt error:", err);
-      if (err.name === 'TypeError' && err.message === 'Failed to fetch') {
-        setError("فشل الاتصال بالخادم. قد يكون الطلب كبيراً جداً (حجم الصورة) أو أن هناك مشكلة في الشبكة.");
+      if (err.name === "TypeError" && err.message === "Failed to fetch") {
+        setError(
+          "فشل الاتصال بالخادم. قد يكون الطلب كبيراً جداً (حجم الصورة) أو أن هناك مشكلة في الشبكة.",
+        );
       } else {
         setError(err.message || "حدث خطأ أثناء ترجمة الوصف");
       }
@@ -502,55 +723,114 @@ export default function ProjectWorkspace() {
       // Easing function for progress (starts fast, slows down)
       const rawProgress = currentStep / steps;
       const easedProgress = 1 - Math.pow(1 - rawProgress, 3); // Cubic ease out
-      
+
       const currentProgress = Math.min(99, Math.floor(easedProgress * 100));
       setProgress(currentProgress);
 
       if (currentProgress < 25) setLoadingText("تحليل الوصف وبناء المشهد...");
       else if (currentProgress < 50) setLoadingText("توليد التكوين الأساسي...");
-      else if (currentProgress < 75) setLoadingText("إضافة التفاصيل والألوان...");
+      else if (currentProgress < 75)
+        setLoadingText("إضافة التفاصيل والألوان...");
       else setLoadingText("اللمسات الأخيرة وتحسين الجودة...");
-
     }, interval);
 
     return () => clearInterval(timer);
   }, [isLoading]);
 
   const addToHistory = async (urls: string[], currentPrompt: string) => {
-    const newItems = urls.map(url => ({
+    const newItems = urls.map((url) => ({
       id: Math.random().toString(36).substring(2, 9),
       url,
       prompt: currentPrompt,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
-    
-    if (user) {
+
+    if (user && employeeId) {
       for (const item of newItems) {
         try {
           let finalUrl = item.url;
           try {
-            const res = await fetch(`/api/proxy?url=${encodeURIComponent(item.url)}`);
+            const res = await fetch(
+              `/api/proxy?url=${encodeURIComponent(item.url)}`,
+            );
             const blob = await res.blob();
-            const imageRef = ref(storage, `users/${user.uid}/projects/${projectId}/history/${item.id}.png`);
+            const imageRef = ref(
+              storage,
+              `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history/${item.id}.png`,
+            );
             await uploadBytes(imageRef, blob);
             finalUrl = await getDownloadURL(imageRef);
           } catch (err) {
             console.error("Failed to upload image to Firebase Storage", err);
           }
 
-          await setDoc(doc(db, `users/${user.uid}/projects/${projectId}/history`, item.id), {
-            ...item,
-            url: finalUrl,
-            userId: user.uid
-          });
+          await setDoc(
+            doc(
+              db,
+              `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+              item.id,
+            ),
+            {
+              ...item,
+              url: finalUrl,
+              userId: user.uid,
+              projectId: projectId,
+              projectName: projectName,
+              employeeId: employeeId,
+            },
+          );
         } catch (err) {
-          handleFirestoreError(err, OperationType.CREATE, `users/${user.uid}/projects/${projectId}/history`);
+          handleFirestoreError(
+            err,
+            OperationType.CREATE,
+            `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+          );
         }
       }
     } else {
-      setHistory(prev => {
+      setHistory((prev) => {
         const next = [...newItems, ...prev].slice(0, 50);
-        localStorage.setItem(`xreef_history_${projectId}`, JSON.stringify(next));
+        localStorage.setItem(
+          `xreef_history_${projectId}`,
+          JSON.stringify(next),
+        );
+        return next;
+      });
+    }
+  };
+
+  const handleDeleteHistoryItem = async (itemId: string, itemUrl: string) => {
+    if (selectedImage === itemUrl) {
+      setSelectedImage(null);
+    }
+    if (user && employeeId) {
+      try {
+        await updateDoc(
+          doc(
+            db,
+            `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+            itemId,
+          ),
+          {
+            deleted: true,
+          },
+        );
+      } catch (err) {
+        handleFirestoreError(
+          err,
+          OperationType.UPDATE,
+          `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+        );
+      }
+    } else {
+      setHistory((prev) => {
+        const next = prev.map((item) =>
+          item.id === itemId ? { ...item, deleted: true } : item
+        );
+        localStorage.setItem(
+          `xreef_history_${projectId}`,
+          JSON.stringify(next),
+        );
         return next;
       });
     }
@@ -564,7 +844,7 @@ export default function ProjectWorkspace() {
         const img = new Image();
         img.src = event.target?.result as string;
         img.onload = () => {
-          const canvas = document.createElement('canvas');
+          const canvas = document.createElement("canvas");
           const MAX_WIDTH = 1024;
           const MAX_HEIGHT = 1024;
           let width = img.width;
@@ -584,15 +864,15 @@ export default function ProjectWorkspace() {
 
           canvas.width = width;
           canvas.height = height;
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext("2d");
           if (!ctx) {
             reject(new Error("Could not get canvas context"));
             return;
           }
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // Export as JPEG with 80% quality to drastically reduce size
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
           resolve(dataUrl);
         };
         img.onerror = (error) => reject(error);
@@ -603,10 +883,13 @@ export default function ProjectWorkspace() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
+    if (files && files.length > 0 && imageFiles.length < 1) {
       try {
         const compressedBase64 = await compressImage(files[0]);
-        setImageFiles([compressedBase64]);
+        setImageFiles((prev) => {
+          if (prev.length >= 1) return prev;
+          return [...prev, compressedBase64];
+        });
         setError(null);
       } catch (err) {
         console.error("Error compressing image:", err);
@@ -629,10 +912,18 @@ export default function ProjectWorkspace() {
     e.preventDefault();
     setIsDragging(false);
     const files = e.dataTransfer.files;
-    if (files && files.length > 0 && files[0].type.startsWith('image/')) {
+    if (
+      files &&
+      files.length > 0 &&
+      files[0].type.startsWith("image/") &&
+      imageFiles.length < 1
+    ) {
       try {
         const compressedBase64 = await compressImage(files[0]);
-        setImageFiles([compressedBase64]);
+        setImageFiles((prev) => {
+          if (prev.length >= 1) return prev;
+          return [...prev, compressedBase64];
+        });
         setError(null);
       } catch (err) {
         console.error("Error compressing image:", err);
@@ -642,17 +933,22 @@ export default function ProjectWorkspace() {
   };
 
   const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     let finalPrompt = prompt.trim();
     if (!finalPrompt) return;
+
+    if (history.length >= 20) {
+      setError("عذراً، لقد وصلت للحد الأقصى لمجلد المشروع الواحد وهو 20 صورة.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -664,12 +960,15 @@ export default function ProjectWorkspace() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          prompt: finalPrompt, 
+        body: JSON.stringify({
+          prompt: finalPrompt,
           images: imageFiles,
           aspectRatio,
           resolution,
-          model: "google/nano-banana-pro"
+          model: "google/nano-banana-pro",
+          promptSimilarity: referenceType === "style" ? (1 - referenceStrength) : referenceType === "structure" ? 0.2 : (1 - referenceStrength),
+          controlType: referenceType === "balanced" ? undefined : referenceType,
+          imageStrength: referenceStrength,
         }),
       });
 
@@ -679,10 +978,17 @@ export default function ProjectWorkspace() {
         data = await response.json();
       } else {
         const text = await response.text();
-        if (text.includes("Please wait while your application starts") || text.includes("application is starting")) {
-          throw new Error("الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.");
+        if (
+          text.includes("Please wait while your application starts") ||
+          text.includes("application is starting")
+        ) {
+          throw new Error(
+            "الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.",
+          );
         }
-        throw new Error(`الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}`);
+        throw new Error(
+          `الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}`,
+        );
       }
 
       if (!response.ok) {
@@ -698,18 +1004,25 @@ export default function ProjectWorkspace() {
       } else if (Array.isArray(data.output) && data.output.length > 0) {
         setImageUrls([data.output[0]]);
         addToHistory([data.output[0]], prompt);
-      } else if (data.output && typeof data.output === "object" && data.output.url) {
+      } else if (
+        data.output &&
+        typeof data.output === "object" &&
+        data.output.url
+      ) {
         setImageUrls([data.output.url]);
         addToHistory([data.output.url], prompt);
       } else {
         console.error("Unexpected output format:", data.output);
-        throw new Error(`تنسيق الاستجابة غير متوقع: ${JSON.stringify(data.output)}`);
+        throw new Error(
+          `تنسيق الاستجابة غير متوقع: ${JSON.stringify(data.output)}`,
+        );
       }
     } catch (err: any) {
       console.error(err);
       let msg = err.message || "حدث خطأ أثناء توليد الصورة";
       if (msg.includes("Prediction failed")) {
-        msg = "فشل توليد الصورة. قد يكون السبب هو سياسة الأمان أو مشكلة مؤقتة في الخادم. حاول تغيير الوصف أو المحاولة لاحقاً.";
+        msg =
+          "فشل توليد الصورة. قد يكون السبب هو سياسة الأمان أو مشكلة مؤقتة في الخادم. حاول تغيير الوصف أو المحاولة لاحقاً.";
       }
       setError(msg);
     } finally {
@@ -724,7 +1037,7 @@ export default function ProjectWorkspace() {
       const response = await fetch(getDisplayUrl(urlToDownload));
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `XREEF-${Date.now()}.png`;
       document.body.appendChild(a);
@@ -734,12 +1047,12 @@ export default function ProjectWorkspace() {
     } catch (err) {
       console.error("Error downloading image:", err);
       // Fallback: open in new tab
-      window.open(urlToDownload, '_blank');
+      window.open(urlToDownload, "_blank");
     }
   };
 
   const getPromptForUrl = (url: string) => {
-    const item = history.find(h => h.url === url);
+    const item = history.find((h) => h.url === url);
     return item ? item.prompt : "";
   };
 
@@ -764,10 +1077,10 @@ export default function ProjectWorkspace() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           image: urlToUpscale,
           scale: 4,
-          faceEnhance: false
+          faceEnhance: false,
         }),
       });
 
@@ -777,10 +1090,17 @@ export default function ProjectWorkspace() {
         data = await response.json();
       } else {
         const text = await response.text();
-        if (text.includes("Please wait while your application starts") || text.includes("application is starting")) {
-          throw new Error("الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.");
+        if (
+          text.includes("Please wait while your application starts") ||
+          text.includes("application is starting")
+        ) {
+          throw new Error(
+            "الخادم قيد التشغيل حالياً. يرجى الانتظار بضع ثوانٍ والمحاولة مرة أخرى.",
+          );
         }
-        throw new Error(`الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}, النوع: ${contentType}`);
+        throw new Error(
+          `الخادم لم يرجع استجابة صحيحة. رمز الخطأ: ${response.status}, النوع: ${contentType}`,
+        );
       }
 
       if (!response.ok) {
@@ -789,38 +1109,65 @@ export default function ProjectWorkspace() {
 
       if (data.output) {
         // Replace the image in the current results if it's there
-        setImageUrls(prev => prev.map(url => url === urlToUpscale ? data.output : url));
-        
+        setImageUrls((prev) =>
+          prev.map((url) => (url === urlToUpscale ? data.output : url)),
+        );
+
         // Replace in history
         if (user) {
-          const itemToUpdate = history.find(item => item.url === urlToUpscale);
+          const itemToUpdate = history.find(
+            (item) => item.url === urlToUpscale,
+          );
           if (itemToUpdate) {
             try {
               let finalUrl = data.output;
               try {
-                const res = await fetch(`/api/proxy?url=${encodeURIComponent(data.output)}`);
+                const res = await fetch(
+                  `/api/proxy?url=${encodeURIComponent(data.output)}`,
+                );
                 const blob = await res.blob();
-                const imageRef = ref(storage, `users/${user.uid}/projects/${projectId}/history/${itemToUpdate.id}_upscale_${Date.now()}.png`);
+                const imageRef = ref(
+                  storage,
+                  `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history/${itemToUpdate.id}_upscale_${Date.now()}.png`,
+                );
                 await uploadBytes(imageRef, blob);
                 finalUrl = await getDownloadURL(imageRef);
               } catch (err) {
-                console.error("Failed to upload upscaled image to Firebase Storage", err);
+                console.error(
+                  "Failed to upload upscaled image to Firebase Storage",
+                  err,
+                );
               }
 
-              await setDoc(doc(db, `users/${user.uid}/projects/${projectId}/history`, itemToUpdate.id), {
-                ...itemToUpdate,
-                url: finalUrl
-              });
+              await setDoc(
+                doc(
+                  db,
+                  `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+                  itemToUpdate.id,
+                ),
+                {
+                  ...itemToUpdate,
+                  url: finalUrl,
+                },
+                { merge: true },
+              );
             } catch (err) {
-              handleFirestoreError(err, OperationType.UPDATE, `users/${user.uid}/projects/${projectId}/history`);
+              handleFirestoreError(
+                err,
+                OperationType.UPDATE,
+                `users/${user.uid}/employees/${employeeId}/projects/${projectId}/history`,
+              );
             }
           }
         } else {
-          setHistory(prev => {
-            const next = prev.map(item => 
-              item.url === urlToUpscale ? { ...item, url: data.output } : item
+          setHistory((prev) => {
+            const next = prev.map((item) =>
+              item.url === urlToUpscale ? { ...item, url: data.output } : item,
             );
-            localStorage.setItem(`xreef_history_${projectId}`, JSON.stringify(next));
+            localStorage.setItem(
+              `xreef_history_${projectId}`,
+              JSON.stringify(next),
+            );
             return next;
           });
         }
@@ -839,9 +1186,9 @@ export default function ProjectWorkspace() {
   };
 
   const handleUseAsInput = (url: string) => {
-    setImageFiles(prev => [...prev, url].slice(0, 14));
+    setImageFiles((prev) => [...prev, url].slice(0, 14));
     setSelectedImage(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const openCropModal = async (url: string) => {
@@ -850,7 +1197,7 @@ export default function ProjectWorkspace() {
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       setImageToCrop(blobUrl);
-      setCrop({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
+      setCrop({ unit: "%", x: 10, y: 10, width: 80, height: 80 });
       setCompletedCrop(null);
     } catch (err) {
       console.error("Error loading image for crop:", err);
@@ -859,26 +1206,31 @@ export default function ProjectWorkspace() {
   };
 
   const closeCropModal = () => {
-    if (imageToCrop && imageToCrop.startsWith('blob:')) {
+    if (imageToCrop && imageToCrop.startsWith("blob:")) {
       window.URL.revokeObjectURL(imageToCrop);
     }
     setImageToCrop(null);
   };
 
   const handleSaveCrop = async () => {
-    if (!completedCrop || !imgRef.current || completedCrop.width === 0 || completedCrop.height === 0) {
+    if (
+      !completedCrop ||
+      !imgRef.current ||
+      completedCrop.width === 0 ||
+      completedCrop.height === 0
+    ) {
       return;
     }
 
     const image = imgRef.current;
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
-    
+
     canvas.width = completedCrop.width * scaleX;
     canvas.height = completedCrop.height * scaleY;
-    
-    const ctx = canvas.getContext('2d');
+
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     ctx.drawImage(
@@ -890,13 +1242,13 @@ export default function ProjectWorkspace() {
       0,
       0,
       completedCrop.width * scaleX,
-      completedCrop.height * scaleY
+      completedCrop.height * scaleY,
     );
 
     canvas.toBlob((blob) => {
       if (!blob) return;
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `XREEF-Cropped-${Date.now()}.png`;
       document.body.appendChild(a);
@@ -904,7 +1256,29 @@ export default function ProjectWorkspace() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       closeCropModal();
-    }, 'image/png');
+    }, "image/png");
+  };
+
+  const getLoadingMessage = (p: number) => {
+    if (p <= 20)
+      return {
+        ar: "جاري تحليل المعطيات والصورة المرجعية...",
+        en: "Analyzing parameters & reference image...",
+      };
+    if (p <= 45)
+      return {
+        ar: "تهيئة شبكة التوليد والنمذجة العصبية...",
+        en: "Initializing generative neural network...",
+      };
+    if (p <= 75)
+      return {
+        ar: "تخليق الأبعاد والظلال الواقعية...",
+        en: "Synthesizing spatial geometry & realistic lighting...",
+      };
+    return {
+      ar: "تحسين وتجهيز التفاصيل النهائية الفائقة...",
+      en: "Refining ultra-high-definition final textures...",
+    };
   };
 
   if (!isAuthReady) {
@@ -916,7 +1290,10 @@ export default function ProjectWorkspace() {
   }
 
   return (
-    <div className="h-screen w-full bg-[#0a0a0a] text-neutral-200 flex flex-col font-sans overflow-hidden selection:bg-blue-500/30" dir="rtl">
+    <div
+      className="h-screen w-full bg-[#0a0a0a] text-neutral-200 flex flex-col font-sans overflow-hidden selection:bg-blue-500/30"
+      dir="rtl"
+    >
       {/* SVG Filters & Utilities */}
       <style>{`
         .bg-dot-pattern {
@@ -948,12 +1325,15 @@ export default function ProjectWorkspace() {
 
       {/* Auth Modal */}
       {isAuthModalOpen && !user && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setIsAuthModalOpen(false)}>
-          <div 
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          onClick={() => setIsAuthModalOpen(false)}
+        >
+          <div
             className="bg-[#111] border border-white/10 p-8 rounded-3xl shadow-2xl max-w-md w-full relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <button 
+            <button
               onClick={() => setIsAuthModalOpen(false)}
               className="absolute top-4 right-4 text-neutral-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-colors"
             >
@@ -962,8 +1342,12 @@ export default function ProjectWorkspace() {
             <div className="flex justify-center mb-6 mt-2">
               <Scene3D className="h-[200px]" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2 text-center tracking-tight">مرحباً بك في XREEF</h2>
-            <p className="text-neutral-400 text-center mb-8 text-sm">قم بتسجيل الدخول لحفظ مشاريعك وسجل توليدك</p>
+            <h2 className="text-2xl font-bold text-white mb-2 text-center tracking-tight">
+              مرحباً بك في XREEF
+            </h2>
+            <p className="text-neutral-400 text-center mb-8 text-sm">
+              قم بتسجيل الدخول لحفظ مشاريعك وسجل توليدك
+            </p>
 
             {authError && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl mb-6 text-sm flex items-center gap-2">
@@ -972,8 +1356,8 @@ export default function ProjectWorkspace() {
               </div>
             )}
 
-            <button 
-              onClick={handleGoogleAuth} 
+            <button
+              onClick={handleGoogleAuth}
               disabled={isAuthLoading}
               className="w-full bg-white hover:bg-neutral-200 text-black font-bold py-3.5 rounded-xl transition-all flex justify-center items-center gap-3 shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
             >
@@ -981,10 +1365,22 @@ export default function ProjectWorkspace() {
                 <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
               ) : (
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  <path
+                    fill="currentColor"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
                 </svg>
               )}
               المتابعة باستخدام Google
@@ -993,37 +1389,113 @@ export default function ProjectWorkspace() {
         </div>
       )}
 
-
-
-
       {/* Fullscreen Image Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 backdrop-blur-lg p-4 sm:p-8" onClick={() => setSelectedImage(null)}>
-          <button className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition-all backdrop-blur-md z-20" onClick={() => setSelectedImage(null)}>
+        <div
+          className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 backdrop-blur-lg p-4 sm:p-8"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition-all backdrop-blur-md z-20"
+            onClick={() => setSelectedImage(null)}
+          >
             <X className="w-6 h-6" />
           </button>
-          
-          <div className="relative flex-1 flex items-center justify-center w-full max-h-[72vh] mb-4" onClick={(e) => e.stopPropagation()}>
-            <img src={getDisplayUrl(selectedImage)} alt="عرض" className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" />
+
+          <div
+            className="relative flex-1 flex items-center justify-center w-full max-h-[72vh] mb-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getDisplayUrl(selectedImage)}
+              alt="عرض"
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+            />
           </div>
 
-          <div className="w-full max-w-3xl space-y-4 shrink-0 z-10" onClick={(e) => e.stopPropagation()}>
-            {/* Removed image generation description block */}
+          <div
+            className="w-full max-w-3xl space-y-4 shrink-0 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {getPromptForUrl(selectedImage) && (
+              <div 
+                className="bg-neutral-900/95 border border-white/10 rounded-2xl p-4 backdrop-blur-md shadow-2xl flex flex-col gap-2 max-w-3xl w-full mx-auto"
+                dir="rtl"
+              >
+                <div className="flex items-center justify-between text-xs text-neutral-400 border-b border-white/5 pb-2">
+                  <span className="font-extrabold text-neutral-200 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-indigo-450" />{" "}
+                    الوصف المستخدم للتوليد
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCopyPrompt(getPromptForUrl(selectedImage))}
+                      className="text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-all px-3 py-1.5 rounded-xl border border-indigo-500/30 flex items-center gap-1.5 shadow-lg active:scale-95 font-bold"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>نسخ الوصف</span>
+                    </button>
+                    <button
+                      onClick={() => handleApplyPrompt(getPromptForUrl(selectedImage))}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 transition-all bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-xl border border-indigo-500/10 flex items-center gap-1.5 font-bold"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>تعديل عليه</span>
+                    </button>
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-200 leading-relaxed font-medium text-right font-sans select-all selection:bg-indigo-600/40" dir="auto">
+                  {getPromptForUrl(selectedImage)}
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center gap-2.5 flex-wrap justify-center w-full">
-              <button onClick={() => handleUseAsInput(selectedImage)} className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md">
-                 <ImagePlus className="w-4 h-4" /> كمرجع
+              <button
+                onClick={() => handleUseAsInput(selectedImage)}
+                className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md"
+              >
+                <ImagePlus className="w-4 h-4" /> كمرجع
               </button>
-              <button onClick={() => handleUpscale(selectedImage)} disabled={isUpscaling === selectedImage} className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md disabled:opacity-50">
-                 {isUpscaling === selectedImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                 تكبير الدقة
+              <button
+                onClick={() => handleUpscale(selectedImage)}
+                disabled={isUpscaling === selectedImage}
+                className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md disabled:opacity-50"
+              >
+                {isUpscaling === selectedImage ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4" />
+                )}
+                تكبير الدقة
               </button>
-              <button onClick={() => { setSelectedImage(null); openCropModal(selectedImage); }} className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md">
-                 <Crop className="w-4 h-4" /> قص
+              <button
+                onClick={() => {
+                  setSelectedImage(null);
+                  openCropModal(selectedImage);
+                }}
+                className="flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-white/10 backdrop-blur-md"
+              >
+                <Crop className="w-4 h-4" /> قص
               </button>
 
-              <button onClick={() => handleDownload(selectedImage)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-medium transition-all shadow-xl border border-blue-500/50 backdrop-blur-md">
-                 <Download className="w-5 h-5" /> تنزيل
+              <button
+                onClick={() => handleDownload(selectedImage)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-medium transition-all shadow-xl border border-blue-500/50 backdrop-blur-md"
+              >
+                <Download className="w-5 h-5" /> تنزيل
+              </button>
+
+              <button
+                onClick={() => {
+                  const foundItem = history.find((h) => h.url === selectedImage);
+                  if (foundItem) {
+                    handleDeleteHistoryItem(foundItem.id, selectedImage);
+                  }
+                }}
+                className="flex items-center gap-2 bg-red-650 hover:bg-red-600 text-white px-5 py-3 rounded-full font-medium transition-all shadow-xl border border-red-500/50 backdrop-blur-md"
+              >
+                <Trash2 className="w-4 h-4" /> مسح
               </button>
             </div>
           </div>
@@ -1033,19 +1505,41 @@ export default function ProjectWorkspace() {
       {/* Cropping Modal */}
       {imageToCrop && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-8">
-          <button className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 rounded-full p-3 transition-all z-10" onClick={closeCropModal}>
+          <button
+            className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 rounded-full p-3 transition-all z-10"
+            onClick={closeCropModal}
+          >
             <X className="w-6 h-6" />
           </button>
           <div className="flex flex-col items-center justify-center max-h-full max-w-full w-full">
-            <h3 className="text-white text-xl font-bold mb-6 tracking-tight">قص وتعديل الصورة</h3>
+            <h3 className="text-white text-xl font-bold mb-6 tracking-tight">
+              قص وتعديل الصورة
+            </h3>
             <div className="overflow-auto max-h-[65vh] max-w-full bg-neutral-900/50 rounded-2xl border border-white/10 p-2 shadow-2xl">
-              <ReactCrop crop={crop} onChange={(_, percentCrop) => setCrop(percentCrop)} onComplete={(c) => setCompletedCrop(c)}>
-                <img ref={imgRef} src={imageToCrop} alt="قص الصورة" className="max-h-[60vh] w-auto object-contain rounded-xl" />
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+              >
+                <img
+                  ref={imgRef}
+                  src={imageToCrop}
+                  alt="قص الصورة"
+                  className="max-h-[60vh] w-auto object-contain rounded-xl"
+                />
               </ReactCrop>
             </div>
             <div className="mt-8 flex gap-3">
-              <button onClick={closeCropModal} className="px-6 py-2.5 rounded-xl font-medium text-white bg-neutral-800 hover:bg-neutral-700 transition-all border border-white/10">إلغاء</button>
-              <button onClick={handleSaveCrop} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg">
+              <button
+                onClick={closeCropModal}
+                className="px-6 py-2.5 rounded-xl font-medium text-white bg-neutral-800 hover:bg-neutral-700 transition-all border border-white/10"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleSaveCrop}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg"
+              >
                 <Download className="w-4 h-4" /> حفظ الصورة المخصوصة
               </button>
             </div>
@@ -1055,60 +1549,122 @@ export default function ProjectWorkspace() {
 
       {/* Prompt Bank Modal */}
       {isPromptBankOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-8" onClick={() => setIsPromptBankOpen(false)}>
-          <div className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden text-right" dir="rtl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-8"
+          onClick={() => setIsPromptBankOpen(false)}
+        >
+          <div
+            className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden text-right"
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/[0.02]">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                   <Library className="w-5 h-5 text-blue-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">مكتبة الأوصاف</h3>
-                
-                <button 
-                  onClick={() => setEditingPrompt({ catIdx: 0, promptIdx: -1, title: "", prompt: "", selectCategory: true })} 
+                <h3 className="text-xl font-bold text-white tracking-tight">
+                  مكتبة الأوصاف
+                </h3>
+
+                <button
+                  onClick={() =>
+                    setEditingPrompt({
+                      catIdx: 0,
+                      promptIdx: -1,
+                      title: "",
+                      prompt: "",
+                      selectCategory: true,
+                    })
+                  }
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-all mr-2"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   إضافة الوصف في سجل الأوصاف
                 </button>
 
-                <button onClick={() => setIsPromptBankEditMode(!isPromptBankEditMode)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors mr-2 ${isPromptBankEditMode ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-white/5 text-neutral-400 hover:text-white border border-transparent'}`}>
+                <button
+                  onClick={() => setIsPromptBankEditMode(!isPromptBankEditMode)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors mr-2 ${isPromptBankEditMode ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "bg-white/5 text-neutral-400 hover:text-white border border-transparent"}`}
+                >
                   <Edit2 className="w-3.5 h-3.5" />
-                  {isPromptBankEditMode ? 'إنهاء التعديل' : 'تعديل المكتبة'}
+                  {isPromptBankEditMode ? "إنهاء التعديل" : "تعديل المكتبة"}
                 </button>
               </div>
-              <button onClick={() => setIsPromptBankOpen(false)} className="text-neutral-500 hover:text-white bg-white/5 rounded-full p-2 transition-colors">
+              <button
+                onClick={() => setIsPromptBankOpen(false)}
+                className="text-neutral-500 hover:text-white bg-white/5 rounded-full p-2 transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="overflow-y-auto p-6 space-y-10 custom-scrollbar relative">
               {promptBank.map((category, idx) => (
                 <div key={idx} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-base font-semibold text-neutral-300 flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                       {category.category}
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      {category.category}
                     </h4>
                     {isPromptBankEditMode && (
-                      <button onClick={() => handleDeleteCategory(idx)} className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors" title="حذف التصنيف">
+                      <button
+                        onClick={() => handleDeleteCategory(idx)}
+                        className="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+                        title="حذف التصنيف"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {category.prompts.map((p, pIdx) => (
-                      <div key={pIdx} className="relative group flex flex-col h-full">
-                        <button onClick={() => { if (!isPromptBankEditMode) { setPrompt(p.prompt); setIsPromptBankOpen(false); } }} className={`flex flex-col items-start text-right p-4 rounded-2xl bg-neutral-900 border transition-all h-full ${isPromptBankEditMode ? 'border-white/5 cursor-default' : 'hover:bg-neutral-800 border-white/5 hover:border-blue-500/30 cursor-pointer'}`}>
-                          <span className="font-semibold text-sm text-neutral-200 group-hover:text-blue-300 mb-2 pr-6">{p.title}</span>
-                          <span className="text-[11px] text-neutral-500 line-clamp-3 leading-relaxed" dir="ltr">{p.prompt}</span>
+                      <div
+                        key={pIdx}
+                        className="relative group flex flex-col h-full"
+                      >
+                        <button
+                          onClick={() => {
+                            if (!isPromptBankEditMode) {
+                              setPrompt(p.prompt);
+                              setIsPromptBankOpen(false);
+                            }
+                          }}
+                          className={`flex flex-col items-start text-right p-4 rounded-2xl bg-neutral-900 border transition-all h-full ${isPromptBankEditMode ? "border-white/5 cursor-default" : "hover:bg-neutral-800 border-white/5 hover:border-blue-500/30 cursor-pointer"}`}
+                        >
+                          <span className="font-semibold text-sm text-neutral-200 group-hover:text-blue-300 mb-2 pr-6">
+                            {p.title}
+                          </span>
+                          <span
+                            className="text-[11px] text-neutral-500 line-clamp-3 leading-relaxed"
+                            dir="ltr"
+                          >
+                            {p.prompt}
+                          </span>
                         </button>
                         {isPromptBankEditMode && (
                           <div className="absolute top-3 right-3 flex items-center gap-1 bg-neutral-900 rounded-lg p-1 border border-white/5 shadow-lg">
-                            <button onClick={(e) => { e.stopPropagation(); setEditingPrompt({ catIdx: idx, promptIdx: pIdx, title: p.title, prompt: p.prompt }); }} className="p-1 text-neutral-400 hover:text-blue-400 transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingPrompt({
+                                  catIdx: idx,
+                                  promptIdx: pIdx,
+                                  title: p.title,
+                                  prompt: p.prompt,
+                                });
+                              }}
+                              className="p-1 text-neutral-400 hover:text-blue-400 transition-colors"
+                            >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); handleDeletePrompt(idx, pIdx); }} className="p-1 text-neutral-400 hover:text-red-400 transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePrompt(idx, pIdx);
+                              }}
+                              className="p-1 text-neutral-400 hover:text-red-400 transition-colors"
+                            >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -1116,27 +1672,64 @@ export default function ProjectWorkspace() {
                       </div>
                     ))}
                     {isPromptBankEditMode && (
-                      <button onClick={() => setEditingPrompt({ catIdx: idx, promptIdx: -1, title: "", prompt: "" })} className="flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-neutral-900/50 hover:bg-neutral-800 border border-dashed border-white/10 hover:border-blue-500/30 transition-all text-neutral-500 hover:text-blue-400 min-h-[100px]">
+                      <button
+                        onClick={() =>
+                          setEditingPrompt({
+                            catIdx: idx,
+                            promptIdx: -1,
+                            title: "",
+                            prompt: "",
+                          })
+                        }
+                        className="flex flex-col items-center justify-center text-center p-4 rounded-2xl bg-neutral-900/50 hover:bg-neutral-800 border border-dashed border-white/10 hover:border-blue-500/30 transition-all text-neutral-500 hover:text-blue-400 min-h-[100px]"
+                      >
                         <Plus className="w-5 h-5 mb-1" />
-                        <span className="text-[11px] font-medium">إضافة نص</span>
+                        <span className="text-[11px] font-medium">
+                          إضافة نص
+                        </span>
                       </button>
                     )}
                   </div>
                 </div>
               ))}
-              
+
               {isPromptBankEditMode && (
                 <div className="pt-8 border-t border-white/5">
                   {isAddingCategory ? (
                     <div className="flex items-center gap-3 bg-neutral-900 p-3 rounded-2xl border border-white/10">
-                      <input type="text" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="اسم القسم الجديد..." className="flex-1 bg-transparent border-none text-white focus:outline-none text-sm px-2" autoFocus />
-                      <button onClick={handleAddCategory} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium transition-colors">إضافة</button>
-                      <button onClick={() => { setIsAddingCategory(false); setNewCategoryName(""); }} className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-1.5 rounded-xl text-sm font-medium transition-colors">إلغاء</button>
+                      <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="اسم القسم الجديد..."
+                        className="flex-1 bg-transparent border-none text-white focus:outline-none text-sm px-2"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleAddCategory}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-xl text-sm font-medium transition-colors"
+                      >
+                        إضافة
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAddingCategory(false);
+                          setNewCategoryName("");
+                        }}
+                        className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-1.5 rounded-xl text-sm font-medium transition-colors"
+                      >
+                        إلغاء
+                      </button>
                     </div>
                   ) : (
-                    <button onClick={() => setIsAddingCategory(true)} className="flex items-center justify-center gap-2 w-full p-4 rounded-2xl bg-neutral-900/50 hover:bg-neutral-800 border border-dashed border-white/10 hover:border-blue-500/30 transition-all text-neutral-500 hover:text-blue-400">
+                    <button
+                      onClick={() => setIsAddingCategory(true)}
+                      className="flex items-center justify-center gap-2 w-full p-4 rounded-2xl bg-neutral-900/50 hover:bg-neutral-800 border border-dashed border-white/10 hover:border-blue-500/30 transition-all text-neutral-500 hover:text-blue-400"
+                    >
                       <Plus className="w-5 h-5" />
-                      <span className="text-sm font-medium">إضافة قسم جديد</span>
+                      <span className="text-sm font-medium">
+                        إضافة قسم جديد
+                      </span>
                     </button>
                   )}
                 </div>
@@ -1148,39 +1741,95 @@ export default function ProjectWorkspace() {
 
       {/* Edit Prompt Modal inside Prompt Bank */}
       {editingPrompt && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 text-right" dir="rtl" onClick={() => setEditingPrompt(null)}>
-          <div className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg p-6 space-y-6" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 text-right"
+          dir="rtl"
+          onClick={() => setEditingPrompt(null)}
+        >
+          <div
+            className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-lg p-6 space-y-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-bold text-white flex items-center gap-2 pb-4 border-b border-white/5">
               <Save className="w-5 h-5 text-emerald-400" />
-              {editingPrompt.promptIdx === -1 ? 'تسجيل جديد في سجل الأوصاف' : 'تعديل النص'}
+              {editingPrompt.promptIdx === -1
+                ? "تسجيل جديد في سجل الأوصاف"
+                : "تعديل النص"}
             </h3>
             <div className="space-y-4">
               {editingPrompt.selectCategory && (
                 <div className="space-y-2">
-                  <label className="block text-xs font-medium text-neutral-400">الفئة / التصنيف المستهدف</label>
+                  <label className="block text-xs font-medium text-neutral-400">
+                    الفئة / التصنيف المستهدف
+                  </label>
                   <select
                     value={editingPrompt.catIdx}
-                    onChange={(e) => setEditingPrompt({...editingPrompt, catIdx: parseInt(e.target.value)})}
+                    onChange={(e) =>
+                      setEditingPrompt({
+                        ...editingPrompt,
+                        catIdx: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50"
                   >
                     {promptBank.map((cat, idx) => (
-                      <option key={idx} value={idx}>{cat.category}</option>
+                      <option key={idx} value={idx}>
+                        {cat.category}
+                      </option>
                     ))}
                   </select>
                 </div>
               )}
               <div className="space-y-2">
-                <label className="block text-xs font-medium text-neutral-400">عنوان موجز للوصف</label>
-                <input type="text" value={editingPrompt.title} onChange={(e) => setEditingPrompt({...editingPrompt, title: e.target.value})} placeholder="مثال: واجهة معمارية مودرن" className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50" />
+                <label className="block text-xs font-medium text-neutral-400">
+                  عنوان موجز للوصف
+                </label>
+                <input
+                  type="text"
+                  value={editingPrompt.title}
+                  onChange={(e) =>
+                    setEditingPrompt({
+                      ...editingPrompt,
+                      title: e.target.value,
+                    })
+                  }
+                  placeholder="مثال: واجهة معمارية مودرن"
+                  className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50"
+                />
               </div>
               <div className="space-y-2">
-                <label className="block text-xs font-medium text-neutral-400">الوصف الكامل (Prompt)</label>
-                <textarea value={editingPrompt.prompt} onChange={(e) => setEditingPrompt({...editingPrompt, prompt: e.target.value})} placeholder="أدخل النص التفصيلي باللغة العربية أو الإنجليزية..." rows={5} className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 resize-none custom-scrollbar" dir="ltr" />
+                <label className="block text-xs font-medium text-neutral-400">
+                  الوصف الكامل (Prompt)
+                </label>
+                <textarea
+                  value={editingPrompt.prompt}
+                  onChange={(e) =>
+                    setEditingPrompt({
+                      ...editingPrompt,
+                      prompt: e.target.value,
+                    })
+                  }
+                  placeholder="أدخل النص التفصيلي باللغة العربية أو الإنجليزية..."
+                  rows={5}
+                  className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 resize-none custom-scrollbar"
+                  dir="ltr"
+                />
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
-              <button onClick={() => setEditingPrompt(null)} className="px-5 py-2.5 rounded-xl text-neutral-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors">إلغاء</button>
-              <button onClick={handleSavePrompt} disabled={!editingPrompt.title.trim() || !editingPrompt.prompt.trim()} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <button
+                onClick={() => setEditingPrompt(null)}
+                className="px-5 py-2.5 rounded-xl text-neutral-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleSavePrompt}
+                disabled={
+                  !editingPrompt.title.trim() || !editingPrompt.prompt.trim()
+                }
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              >
                 <Save className="w-4 h-4" /> حفظ في السجل
               </button>
             </div>
@@ -1190,64 +1839,159 @@ export default function ProjectWorkspace() {
 
       {/* Template Modal */}
       {isTemplateModalOpen && imageToTemplate && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onClick={() => setIsTemplateModalOpen(false)}>
-          <div className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+          onClick={() => setIsTemplateModalOpen(false)}
+        >
+          <div
+            className="bg-[#111] border border-white/10 rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between p-5 border-b border-white/5 bg-white/[0.02]">
               <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400"><LayoutTemplate className="w-4 h-4" /></div>
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                  <LayoutTemplate className="w-4 h-4" />
+                </div>
                 دمج مع قالب
               </h3>
-              <button onClick={() => setIsTemplateModalOpen(false)} className="text-neutral-500 hover:text-white bg-white/5 rounded-full p-2.5 transition-colors">
+              <button
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="text-neutral-500 hover:text-white bg-white/5 rounded-full p-2.5 transition-colors"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-               <div className="flex-1 p-6 bg-black overflow-auto flex items-center justify-center relative dot-pattern">
-                 {!templateImage ? (
-                   <div className="text-center space-y-4">
-                     <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center mx-auto border border-dashed border-neutral-700">
-                       <Upload className="w-8 h-8 text-neutral-500" />
-                     </div>
-                     <p className="text-sm text-neutral-400">الرجاء رفع صورة القالب (الموك آب)</p>
-                     <input type="file" accept="image/*" onChange={handleTemplateUpload} className="hidden" id="template-upload" />
-                     <label htmlFor="template-upload" className="inline-block bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors border border-white/10">اختيار صورة القالب</label>
-                   </div>
-                 ) : (
-                   <div className="relative shadow-2xl border border-white/10 rounded-xl overflow-hidden bg-neutral-900" style={{ maxWidth: '100%', maxHeight: '100%' }}>
-                     <canvas ref={templateCanvasRef} className="max-w-full max-h-[60vh] md:max-h-[70vh] object-contain" />
-                   </div>
-                 )}
-               </div>
-               {templateImage && (
-                 <div className="w-full md:w-80 p-6 border-t md:border-t-0 md:border-r border-white/5 bg-[#0a0a0a] overflow-y-auto space-y-8 custom-scrollbar">
-                   <div className="space-y-6">
-                     <h4 className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
-                       <Settings2 className="w-4 h-4" /> إعدادات الدمج
-                     </h4>
-                     <div className="space-y-3">
-                       <label className="flex justify-between text-xs font-medium text-neutral-400"><span>مقياس الحجم (Scale)</span><span className="text-indigo-400">{templateSettings.scale}%</span></label>
-                       <input type="range" min="10" max="200" value={templateSettings.scale} onChange={(e) => setTemplateSettings({...templateSettings, scale: parseInt(e.target.value)})} className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
-                     </div>
-                     <div className="space-y-3">
-                       <label className="flex justify-between text-xs font-medium text-neutral-400"><span>المحور الأفقي (X)</span><span className="text-indigo-400">{templateSettings.offsetX}%</span></label>
-                       <input type="range" min="0" max="100" value={templateSettings.offsetX} onChange={(e) => setTemplateSettings({...templateSettings, offsetX: parseInt(e.target.value)})} className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
-                     </div>
-                     <div className="space-y-3">
-                       <label className="flex justify-between text-xs font-medium text-neutral-400"><span>المحور الرأسي (Y)</span><span className="text-indigo-400">{templateSettings.offsetY}%</span></label>
-                       <input type="range" min="0" max="100" value={templateSettings.offsetY} onChange={(e) => setTemplateSettings({...templateSettings, offsetY: parseInt(e.target.value)})} className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
-                     </div>
-                   </div>
-                   <div className="pt-6 border-t border-white/5 space-y-3">
-                     <button onClick={handleDownloadTemplate} className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-500/20">
-                       <Download className="w-4 h-4" /> حفظ النتيجة
-                     </button>
-                     <div className="text-center">
-                       <input type="file" accept="image/*" onChange={handleTemplateUpload} className="hidden" id="template-change" />
-                       <label htmlFor="template-change" className="text-xs text-neutral-500 hover:text-white cursor-pointer transition-colors block py-2">تغيير صورة القالب</label>
-                     </div>
-                   </div>
-                 </div>
-               )}
+              <div className="flex-1 p-6 bg-black overflow-auto flex items-center justify-center relative dot-pattern">
+                {!templateImage ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center mx-auto border border-dashed border-neutral-700">
+                      <Upload className="w-8 h-8 text-neutral-500" />
+                    </div>
+                    <p className="text-sm text-neutral-400">
+                      الرجاء رفع صورة القالب (الموك آب)
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleTemplateUpload}
+                      className="hidden"
+                      id="template-upload"
+                    />
+                    <label
+                      htmlFor="template-upload"
+                      className="inline-block bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-colors border border-white/10"
+                    >
+                      اختيار صورة القالب
+                    </label>
+                  </div>
+                ) : (
+                  <div
+                    className="relative shadow-2xl border border-white/10 rounded-xl overflow-hidden bg-neutral-900"
+                    style={{ maxWidth: "100%", maxHeight: "100%" }}
+                  >
+                    <canvas
+                      ref={templateCanvasRef}
+                      className="max-w-full max-h-[60vh] md:max-h-[70vh] object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+              {templateImage && (
+                <div className="w-full md:w-80 p-6 border-t md:border-t-0 md:border-r border-white/5 bg-[#0a0a0a] overflow-y-auto space-y-8 custom-scrollbar">
+                  <div className="space-y-6">
+                    <h4 className="text-sm font-semibold text-neutral-300 flex items-center gap-2">
+                      <Settings2 className="w-4 h-4" /> إعدادات الدمج
+                    </h4>
+                    <div className="space-y-3">
+                      <label className="flex justify-between text-xs font-medium text-neutral-400">
+                        <span>مقياس الحجم (Scale)</span>
+                        <span className="text-indigo-400">
+                          {templateSettings.scale}%
+                        </span>
+                      </label>
+                      <input
+                        type="range"
+                        min="10"
+                        max="200"
+                        value={templateSettings.scale}
+                        onChange={(e) =>
+                          setTemplateSettings({
+                            ...templateSettings,
+                            scale: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="flex justify-between text-xs font-medium text-neutral-400">
+                        <span>المحور الأفقي (X)</span>
+                        <span className="text-indigo-400">
+                          {templateSettings.offsetX}%
+                        </span>
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={templateSettings.offsetX}
+                        onChange={(e) =>
+                          setTemplateSettings({
+                            ...templateSettings,
+                            offsetX: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="flex justify-between text-xs font-medium text-neutral-400">
+                        <span>المحور الرأسي (Y)</span>
+                        <span className="text-indigo-400">
+                          {templateSettings.offsetY}%
+                        </span>
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={templateSettings.offsetY}
+                        onChange={(e) =>
+                          setTemplateSettings({
+                            ...templateSettings,
+                            offsetY: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="pt-6 border-t border-white/5 space-y-3">
+                    <button
+                      onClick={handleDownloadTemplate}
+                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-500/20"
+                    >
+                      <Download className="w-4 h-4" /> حفظ النتيجة
+                    </button>
+                    <div className="text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleTemplateUpload}
+                        className="hidden"
+                        id="template-change"
+                      />
+                      <label
+                        htmlFor="template-change"
+                        className="text-xs text-neutral-500 hover:text-white cursor-pointer transition-colors block py-2"
+                      >
+                        تغيير صورة القالب
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1258,59 +2002,90 @@ export default function ProjectWorkspace() {
       {/* Top Navbar */}
       <header className="h-16 flex-none border-b border-white/5 bg-[#0a0a0a] flex items-center justify-between px-4 sm:px-6 z-20">
         <div className="flex items-center gap-4 sm:gap-6">
-          <button onClick={() => navigate('/')} className="text-neutral-500 hover:text-white hover:bg-white/5 p-2 rounded-lg transition-all" title="الرجوع للقائمة">
+          <button
+            onClick={() => navigate(`/employee/${employeeId}`)}
+            className="text-neutral-500 hover:text-white hover:bg-white/5 p-2 rounded-lg transition-all"
+            title="الرجوع للقائمة"
+          >
             <ArrowLeft size={18} />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
             <div className="flex flex-col">
-              <h1 className="font-bold text-base sm:text-lg leading-tight text-white tracking-wide">XREEF <span className="text-blue-400">2.0</span></h1>
+              <h1 className="font-bold text-base sm:text-lg leading-tight text-white tracking-wide">
+                XREEF <span className="text-blue-400">2.0</span>
+              </h1>
             </div>
           </div>
           {projectName && (
             <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5 ml-4">
               <Folder className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="text-xs font-medium text-neutral-300">{projectName}</span>
+              <span className="text-xs font-medium text-neutral-300">
+                {projectName}
+              </span>
+              <span className="w-1 h-1 bg-white/10 rounded-full mx-1"></span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${history.length >= 20 ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                {history.length}/20 صورة
+              </span>
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <button 
-            onClick={() => navigate('/gallery')} 
-            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 py-2 px-3 rounded-xl transition-all" 
+          <button
+            onClick={() => navigate("/gallery")}
+            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 py-2 px-3 rounded-xl transition-all"
             title="المعرض العام للصور"
           >
             <ImageIcon size={14} className="text-blue-400" />
             <span className="hidden sm:inline">المعرض العام</span>
           </button>
 
-          <button onClick={() => navigate('/support')} className="text-neutral-500 hover:text-white hover:bg-white/5 p-2 rounded-lg transition-all hidden sm:block" title="الدعم الفني">
+          <button
+            onClick={() => navigate("/support")}
+            className="text-neutral-500 hover:text-white hover:bg-white/5 p-2 rounded-lg transition-all hidden sm:block"
+            title="الدعم الفني"
+          >
             <LifeBuoy size={18} />
           </button>
-          
+
           <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
 
           {user ? (
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 bg-neutral-900 border border-white/5 px-2 py-1 rounded-full pr-1">
-                <span className="text-xs font-medium text-neutral-300 pl-2">{user.displayName || 'مستخدم'}</span>
+                <span className="text-xs font-medium text-neutral-300 pl-2">
+                  {user.displayName || "مستخدم"}
+                </span>
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt="المستخدم" className="w-6 h-6 rounded-full border border-white/10" />
+                  <img
+                    src={user.photoURL}
+                    alt="المستخدم"
+                    className="w-6 h-6 rounded-full border border-white/10"
+                  />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                    <span className="text-xs text-blue-400">{user.displayName?.charAt(0) || 'U'}</span>
+                    <span className="text-xs text-blue-400">
+                      {user.displayName?.charAt(0) || "U"}
+                    </span>
                   </div>
                 )}
               </div>
-              <button onClick={logOut} className="text-red-400/80 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors" title="تسجيل الخروج">
+              <button
+                onClick={logOut}
+                className="text-red-400/80 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                title="تسجيل الخروج"
+              >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <button onClick={() => { setAuthError(null); setIsAuthModalOpen(true); }} className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-4 py-1.5 rounded-lg text-sm font-bold transition-all shadow-lg text-center">
+            <button
+              onClick={() => {
+                setAuthError(null);
+                setIsAuthModalOpen(true);
+              }}
+              className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-4 py-1.5 rounded-lg text-sm font-bold transition-all shadow-lg text-center"
+            >
               <LogIn className="w-4 h-4 hidden sm:block" />
               تسجيل دخول
             </button>
@@ -1319,66 +2094,117 @@ export default function ProjectWorkspace() {
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        
         {/* Right Sidebar (Controls) */}
         <aside className="w-full md:w-[380px] lg:w-[420px] flex-none border-l border-white/5 bg-[#0a0a0a] flex flex-col z-10 md:h-full order-2 md:order-1 relative">
-
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 custom-scrollbar">
-              <form onSubmit={handleGenerate} className="space-y-8 pb-32 md:pb-0 relative h-full flex flex-col">
-                
-                {/* Prompt Section */}
+            <form
+              onSubmit={handleGenerate}
+              className="space-y-8 pb-32 md:pb-0 relative h-full flex flex-col"
+            >
+              {/* Prompt Section */}
               <div className="space-y-3 shrink-0">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-bold text-neutral-200 flex items-center gap-2">
-                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                     وصف الصورة
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    وصف الصورة
                   </label>
                   <div className="flex items-center gap-2">
                     {prompt.trim() && (
-                      <button type="button" onClick={handleOpenQuickSave} className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-500/20 animate-in fade-in zoom-in-95" title="تسجيل هذا الوصف في سجل الأوصاف">
+                      <button
+                        type="button"
+                        onClick={handleOpenQuickSave}
+                        className="text-[11px] font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5 border border-emerald-500/20 animate-in fade-in zoom-in-95"
+                        title="تسجيل هذا الوصف في سجل الأوصاف"
+                      >
                         <Save className="w-3.5 h-3.5" /> تسجيل السجل
                       </button>
                     )}
-                    <button type="button" onClick={() => setIsPromptBankOpen(true)} className="text-[11px] font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsPromptBankOpen(true)}
+                      className="text-[11px] font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 px-2.5 py-1.5 rounded-md transition-colors flex items-center gap-1.5"
+                    >
                       <Library className="w-3.5 h-3.5" /> الأوصاف الجاهزة
                     </button>
                   </div>
                 </div>
-                
-                  <div className="relative group">
-                    <textarea
-                      id="prompt"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      disabled={isLoading || isEnhancingPrompt}
-                      placeholder="ماذا تريد أن تبدع اليوم؟ (بالعربية أو الإنجليزية)..."
-                      className="w-full bg-[#141414] border border-white/10 text-white rounded-2xl p-4 min-h-[600px] resize-none focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all custom-scrollbar text-sm leading-relaxed font-cairo"
-                    />
-                    <div className="absolute left-3 bottom-3 flex items-center gap-2">
-                      <button type="button" onClick={handleEnhancePrompt} disabled={!prompt.trim() || isEnhancingPrompt || isLoading} className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group/magic" title="ترجمة وتحسين الوصف بواسطة Gemini 3.1">
-                        {isEnhancingPrompt ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4 group-hover/magic:scale-110 transition-transform" />}
-                      </button>
-                      {prompt.trim() && (
-                        <>
-                          <button type="button" onClick={handleOpenQuickSave} className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all" title="تسجيل هذا الوصف في سجل الأوصاف">
-                            <Save className="w-4 h-4" />
-                          </button>
-                          <button type="button" onClick={() => setPrompt('')} className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-400 transition-all border border-white/5" title="مسح النص">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </>
+
+                <div className="relative group">
+                  <textarea
+                    id="prompt"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    disabled={isLoading || isEnhancingPrompt}
+                    placeholder="ماذا تريد أن تبدع اليوم؟ (بالعربية أو الإنجليزية)..."
+                    className="w-full bg-[#141414] border border-white/10 text-white rounded-2xl p-4 min-h-[600px] resize-none focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all custom-scrollbar text-sm leading-relaxed font-cairo"
+                  />
+                  <div className="absolute left-3 bottom-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleEnhancePrompt}
+                      disabled={
+                        !prompt.trim() || isEnhancingPrompt || isLoading
+                      }
+                      className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group/magic"
+                      title="ترجمة وتحسين الوصف بواسطة Gemini 3.1"
+                    >
+                      {isEnhancingPrompt ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-4 h-4 group-hover/magic:scale-110 transition-transform" />
                       )}
-                    </div>
+                    </button>
+                    {prompt.trim() && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleOpenQuickSave}
+                          className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all"
+                          title="تسجيل هذا الوصف في سجل الأوصاف"
+                        >
+                          <Save className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPrompt("")}
+                          className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-400 transition-all border border-white/5"
+                          title="مسح النص"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
+                </div>
 
                 {enhancedPromptResult && (
                   <div className="p-4 bg-purple-900/10 border border-purple-500/20 rounded-2xl animate-in slide-in-from-top-2">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">Gemini 3.1 ✧</span>
-                      <button type="button" onClick={() => setEnhancedPromptResult(null)} className="text-neutral-500 hover:text-white transition-colors"><X className="w-3.5 h-3.5"/></button>
+                      <span className="text-[11px] font-bold text-purple-400 uppercase tracking-widest">
+                        Gemini 3.1 ✧
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEnhancedPromptResult(null)}
+                        className="text-neutral-500 hover:text-white transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <p className="text-xs text-purple-200/80 leading-relaxed mb-3 font-mono" dir="ltr">{enhancedPromptResult}</p>
-                    <button type="button" onClick={() => { setPrompt(enhancedPromptResult); setEnhancedPromptResult(null); }} className="w-full py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-xl text-xs font-medium transition-colors border border-purple-500/20">
+                    <p
+                      className="text-xs text-purple-200/80 leading-relaxed mb-3 font-mono"
+                      dir="ltr"
+                    >
+                      {enhancedPromptResult}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPrompt(enhancedPromptResult);
+                        setEnhancedPromptResult(null);
+                      }}
+                      className="w-full py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-xl text-xs font-medium transition-colors border border-purple-500/20"
+                    >
                       استخدام هذا الوصف
                     </button>
                   </div>
@@ -1386,41 +2212,305 @@ export default function ProjectWorkspace() {
               </div>
 
               {/* Reference Image Section */}
-              <div className="space-y-3 shrink-0">
-                <label className="text-sm font-bold text-neutral-200 flex items-center gap-2">
-                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                   صورة مرجعية <span className="text-neutral-600 font-normal text-xs">(اختياري)</span>
-                </label>
-                {imageFiles.length > 0 ? (
-                  <div className="relative group w-full aspect-video bg-[#141414] rounded-2xl border border-indigo-500/30 overflow-hidden flex items-center justify-center">
-                    <img src={imageFiles[0]} alt="معاينة" className="w-full h-full object-contain" />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button type="button" onClick={() => removeImage(0)} className="bg-red-500/90 text-white p-2.5 rounded-full hover:bg-red-500 hover:scale-110 active:scale-95 transition-all shadow-lg shadow-red-500/20">
-                        <Trash2 className="w-4 h-4" />
+              <div className="space-y-3.5 shrink-0">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-neutral-200 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    الصورة المرجعية{" "}
+                    <span className="text-indigo-400/80 font-medium text-[10px] bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                      صورة واحدة فقط
+                    </span>
+                  </label>
+                  {imageFiles.length > 0 && (
+                    <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      ✓ تم التحميل بنجاح
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-3 pb-2">
+                  <AnimatePresence mode="wait">
+                    {imageFiles.map((file, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                        }}
+                        className="relative group w-full h-52 shrink-0 bg-[#0e0e11] rounded-3xl border-2 border-indigo-500/30 overflow-hidden flex items-center justify-center shadow-2xl shadow-indigo-500/5 group"
+                      >
+                        <img
+                          src={file}
+                          alt="معاينة"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+
+                        {/* Elegant gradient overlay on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5">
+                          <div className="flex items-center justify-between w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <div className="text-right">
+                              <p className="text-[11px] text-neutral-300 font-bold">
+                                صورة مرجعية نشطة
+                              </p>
+                              <p className="text-[9px] text-neutral-500 mt-0.5">
+                                ستستخدم لتوجيه أبعاد ونمط التوليد
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-2xl active:scale-95 transition-all shadow-lg shadow-red-500/20 flex items-center gap-2 text-xs font-bold font-sans backdrop-blur-md"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>إزالة</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Top action badge for quick actions */}
+                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 text-[10px] text-neutral-300 font-bold flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          <span>جاهزة للتوليد</span>
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {imageFiles.length < 1 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`flex flex-col items-center justify-center w-full h-52 shrink-0 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300 relative overflow-hidden group p-6 ${
+                          isDragging
+                            ? "border-indigo-500 bg-indigo-500/10 text-indigo-400 shadow-[0_0_25px_rgba(99,102,241,0.15)]"
+                            : "border-white/10 hover:border-indigo-500/40 bg-[#0c0c0e]/80 hover:bg-[#111115]/90 text-neutral-500 shadow-inner"
+                        }`}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        {/* Underlay glow accent */}
+                        <div className="absolute -right-16 -top-16 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors duration-300"></div>
+                        <div className="absolute -left-16 -bottom-16 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors duration-300"></div>
+
+                        <div className="p-4 rounded-2xl bg-white/[0.02] group-hover:bg-indigo-500/10 border border-white/5 group-hover:border-indigo-500/20 transition-all duration-300 mb-4 group-hover:scale-110 shadow-lg shadow-black/10">
+                          <Upload
+                            className={`w-6 h-6 transition-all duration-300 ${isDragging ? "text-indigo-400" : "text-neutral-400 group-hover:text-indigo-400 group-hover:rotate-6"}`}
+                          />
+                        </div>
+
+                        <span
+                          className={`text-xs font-extrabold text-center transition-colors duration-300 ${isDragging ? "text-indigo-300" : "text-neutral-200 group-hover:text-white"}`}
+                        >
+                          اسحب وأفلت الصورة المرجعية هنا
+                        </span>
+
+                        <span className="text-[10px] text-neutral-500 mt-2 text-center leading-relaxed max-w-[190px]">
+                          أو انقر لتصفح ملفات جهازك{" "}
+                          <span className="text-indigo-400/80 font-bold block mt-0.5">
+                            (صورة واحدة فقط)
+                          </span>
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                {/* Reference Image Options */}
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="space-y-4 bg-[#0e0e11] border border-white/5 rounded-2xl p-4 mt-2"
+                >
+                  {imageFiles.length === 0 ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider font-cairo">
+                          إضافة صورة مرجعية
+                        </label>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-2.5 px-4 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 hover:border-indigo-500/30 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 font-cairo"
+                      >
+                        <ImagePlus className="w-4 h-4" />
+                        <span>اختيار صورة من جهازك</span>
                       </button>
+
+                      {history.filter(item => item.url).length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <span className="text-[10px] text-neutral-400 font-bold block text-right font-cairo">
+                            أو اختر من الصور السابقة بالمشروع:
+                          </span>
+                          <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                            {history.filter(item => item.url).map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => setImageFiles([item.url])}
+                                className="relative shrink-0 w-12 h-12 rounded-lg overflow-hidden border border-white/10 hover:border-indigo-500 transition-all active:scale-95 group"
+                              >
+                                <img
+                                  src={item.url}
+                                  alt="History item"
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <Plus className="w-3.5 h-3.5 text-white" />
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ) : (
-                  <div 
-                    onClick={() => fileInputRef.current?.click()} 
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`flex flex-col items-center justify-center w-full min-h-[100px] border border-dashed rounded-2xl cursor-pointer transition-all group p-4 ${isDragging ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/10 hover:border-indigo-500/50 bg-[#141414] hover:bg-[#1a1a1a]'}`}
-                  >
-                    <Upload className={`w-6 h-6 mb-2 transition-colors ${isDragging ? 'text-indigo-400' : 'text-neutral-600 group-hover:text-indigo-400'}`} />
-                    <span className={`text-xs font-medium ${isDragging ? 'text-indigo-300' : 'text-neutral-500'}`}>سحب وإفلات أو اضغط لرفع صورة</span>
-                  </div>
-                )}
-                <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                  ) : (
+                    <>
+                      {/* Reference Mode */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider font-cairo">
+                            طريقة التأثير (Reference Mode)
+                          </label>
+                          <span className="text-[10px] text-indigo-400 font-bold bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/10 font-cairo">
+                            {referenceType === "structure" ? "نفس الرندر والشكل" : referenceType === "style" ? "نفس النمط والألوان" : "توليف كامل"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setReferenceType("structure")}
+                            className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all font-cairo ${
+                              referenceType === "structure"
+                                ? "bg-indigo-500/10 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-500/5"
+                                : "bg-[#141414] border-white/5 text-neutral-400 hover:text-white"
+                            }`}
+                          >
+                            رندر وتصميم
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setReferenceType("style")}
+                            className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all font-cairo ${
+                              referenceType === "style"
+                                ? "bg-indigo-500/10 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-500/5"
+                                : "bg-[#141414] border-white/5 text-neutral-400 hover:text-white"
+                            }`}
+                          >
+                            نمط وألوان
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setReferenceType("balanced")}
+                            className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all font-cairo ${
+                              referenceType === "balanced"
+                                ? "bg-indigo-500/10 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-500/5"
+                                : "bg-[#141414] border-white/5 text-neutral-400 hover:text-white"
+                            }`}
+                          >
+                            توليف متكامل
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-neutral-500 leading-normal mt-1 text-right font-cairo">
+                          {referenceType === "structure" 
+                            ? "يحافظ بدقة على الهيكل والخطوط العريضة وتصميم الرندر الهندسي."
+                            : referenceType === "style"
+                            ? "ينقل النمط الفني، الألوان، الإضاءة والجمالية الفنية الإبداعية."
+                            : "يدمج بين التصميم الخارجي والأسلوب الإبداعي بشكل متوازن تماماً."}
+                        </p>
+                      </div>
+
+                      {/* Reference Strength */}
+                      <div className="space-y-2 pt-2 border-t border-white/5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider font-cairo">
+                            قوة المطابقة والالتزام
+                          </label>
+                          <span className="text-[10px] text-neutral-300 font-mono font-bold">
+                            {Math.round(referenceStrength * 100)}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] text-neutral-500 font-cairo">خفيف</span>
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="1.0"
+                            step="0.05"
+                            value={referenceStrength}
+                            onChange={(e) => setReferenceStrength(parseFloat(e.target.value))}
+                            className="flex-1 accent-indigo-500 h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+                          />
+                          <span className="text-[10px] text-neutral-500 font-cairo">تطابق تام</span>
+                        </div>
+                      </div>
+
+                      {/* Change reference image from history */}
+                      {history.filter(item => item.url).length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-white/5">
+                          <span className="text-[10px] text-neutral-400 font-bold block text-right font-cairo">
+                            تغيير الصورة المرجعية من الصور السابقة:
+                          </span>
+                          <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                            {history.filter(item => item.url).map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => setImageFiles([item.url])}
+                                className={`relative shrink-0 w-10 h-10 rounded-lg overflow-hidden border transition-all active:scale-95 group ${
+                                  imageFiles[0] === item.url ? "border-indigo-500 scale-95" : "border-white/10 hover:border-indigo-500/50"
+                                }`}
+                              >
+                                <img
+                                  src={item.url}
+                                  alt="History item"
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                                {imageFiles[0] === item.url && (
+                                  <div className="absolute inset-0 bg-indigo-500/20 flex items-center justify-center">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                                  </div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </motion.div>
               </div>
 
               {/* Settings Section */}
               <div className="grid grid-cols-2 gap-4 shrink-0">
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">الأبعاد (Ratio)</label>
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                    الأبعاد (Ratio)
+                  </label>
                   <div className="relative">
-                    <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)} className="w-full appearance-none bg-[#141414] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors">
+                    <select
+                      value={aspectRatio}
+                      onChange={(e) => setAspectRatio(e.target.value)}
+                      className="w-full appearance-none bg-[#141414] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                    >
                       <option value="1:1">مربع 1:1</option>
                       <option value="16:9">شاشة 16:9</option>
                       <option value="9:16">طولي 9:16</option>
@@ -1431,9 +2521,15 @@ export default function ProjectWorkspace() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">الدقة (Res)</label>
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                    الدقة (Res)
+                  </label>
                   <div className="relative">
-                    <select value={resolution} onChange={(e) => setResolution(e.target.value)} className="w-full appearance-none bg-[#141414] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors">
+                    <select
+                      value={resolution}
+                      onChange={(e) => setResolution(e.target.value)}
+                      className="w-full appearance-none bg-[#141414] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+                    >
                       <option value="1K">سريع 1K</option>
                       <option value="2K">عالي 2K</option>
                       <option value="4K">فائق 4K</option>
@@ -1446,8 +2542,12 @@ export default function ProjectWorkspace() {
               {/* Error Box inside scroll area */}
               {error && (
                 <div className="p-4 bg-red-900/10 border border-red-500/20 rounded-xl flex items-start gap-3 mt-4 shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20"><X className="w-4 h-4 text-red-500" /></div>
-                  <p className="text-xs text-red-400 leading-relaxed pt-1">{error}</p>
+                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20">
+                    <X className="w-4 h-4 text-red-500" />
+                  </div>
+                  <p className="text-xs text-red-400 leading-relaxed pt-1">
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -1458,17 +2558,24 @@ export default function ProjectWorkspace() {
               <div className="absolute md:relative bottom-0 left-0 right-0 p-5 md:p-0 bg-[#0a0a0a] md:bg-transparent border-t border-white/5 md:border-none z-20 mt-auto pt-6">
                 <button
                   type="submit"
-                  disabled={isLoading || !prompt.trim()}
+                  disabled={isLoading || !prompt.trim() || history.length >= 20}
                   className={`w-full relative overflow-hidden flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isLoading 
-                      ? 'bg-neutral-800 text-neutral-400 border border-white/5' 
-                      : 'bg-white text-black hover:bg-neutral-200 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] active:scale-[0.98]'
+                    isLoading
+                      ? "bg-neutral-800 text-neutral-400 border border-white/5"
+                      : history.length >= 20
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20 shadow-none cursor-not-allowed"
+                      : "bg-white text-black hover:bg-neutral-200 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] active:scale-[0.98]"
                   }`}
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       <span>قيد التنفيذ...</span>
+                    </>
+                  ) : history.length >= 20 ? (
+                    <>
+                      <X className="w-5 h-5 text-red-400" />
+                      <span>الحد الأقصى (20/20 صورة)</span>
                     </>
                   ) : (
                     <>
@@ -1477,6 +2584,11 @@ export default function ProjectWorkspace() {
                     </>
                   )}
                 </button>
+                {history.length >= 20 && (
+                  <p className="text-[10px] text-red-400/80 text-center mt-2 font-medium" dir="rtl">
+                    لقد وصلت للحد الأقصى للمجلد (20 صورة).
+                  </p>
+                )}
               </div>
             </form>
           </div>
@@ -1484,179 +2596,540 @@ export default function ProjectWorkspace() {
 
         {/* Left Area (Canvas) */}
         <section className="flex-1 flex flex-col relative bg-[#111] overflow-hidden order-1 md:order-2">
-           {/* Subtle Grid Background */}
-           <div className="absolute inset-0 bg-dot-pattern opacity-50 z-0 mix-blend-overlay"></div>
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_0%,rgba(10,10,10,1)_90%)] z-0 pointer-events-none"></div>
+          {/* Subtle Grid Background */}
+          <div className="absolute inset-0 bg-dot-pattern opacity-50 z-0 mix-blend-overlay"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_0%,rgba(10,10,10,1)_90%)] z-0 pointer-events-none"></div>
 
-           {/* Canvas Area */}
-           <div className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 flex flex-col">
-              
-              {isLoading ? (
-                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0a0c]/90 backdrop-blur-lg animate-in fade-in duration-300" dir="ltr">
-                  <style>{`
-                    @keyframes liquid-wave {
-                      0% { transform: translateX(0); }
-                      100% { transform: translateX(-50px); }
+          {/* Canvas Area */}
+          <div className="flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10 flex flex-col">
+            {isLoading ? (
+              <div
+                className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#070709]/95 backdrop-blur-xl animate-in fade-in duration-300"
+                dir="ltr"
+              >
+                <style>{`
+                    @keyframes spin-clockwise {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                    @keyframes spin-counterclockwise {
+                      0% { transform: rotate(360deg); }
+                      100% { transform: rotate(0deg); }
+                    }
+                    @keyframes laser-scan {
+                      0%, 100% { transform: translateY(0px); opacity: 0.2; }
+                      50% { transform: translateY(56px); opacity: 0.95; }
+                    }
+                    @keyframes aura-pulse {
+                      0%, 100% { transform: scale(0.96); opacity: 0.45; filter: drop-shadow(0 0 12px rgba(99,102,241,0.2)); }
+                      50% { transform: scale(1.04); opacity: 0.75; filter: drop-shadow(0 0 28px rgba(168,85,247,0.55)); }
+                    }
+                    @keyframes particle-float {
+                      0%, 100% { transform: translateY(0px) scale(1); opacity: 0.4; }
+                      50% { transform: translateY(-6px) scale(1.25); opacity: 0.85; }
                     }
                   `}</style>
-                  <div className="relative flex flex-col items-center">
-                    
-                    <div className="w-40 h-40 relative">
-                      <svg width="100%" height="100%" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
-                        <defs>
-                          <clipPath id="cup-clip">
-                            <path d="M 25 40 L 25 70 C 25 85, 30 95, 50 95 C 70 95, 75 85, 75 70 L 75 40 Q 75 35, 70 35 L 30 35 Q 25 35, 25 40 Z" />
-                          </clipPath>
-                        </defs>
+                <div className="relative flex flex-col items-center">
+                  <div className="w-44 h-44 relative">
+                    <svg
+                      width="100%"
+                      height="100%"
+                      viewBox="0 0 100 100"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="overflow-visible select-none"
+                    >
+                      <defs>
+                        <filter
+                          id="neon-glow"
+                          x="-25%"
+                          y="-25%"
+                          width="150%"
+                          height="150%"
+                        >
+                          <feGaussianBlur stdDeviation="3.5" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                        <radialGradient
+                          id="center-glowing"
+                          cx="50%"
+                          cy="50%"
+                          r="50%"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#c084fc"
+                            stopOpacity="0.85"
+                          />
+                          <stop
+                            offset="55%"
+                            stopColor="#6366f1"
+                            stopOpacity="0.5"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#4f46e5"
+                            stopOpacity="0"
+                          />
+                        </radialGradient>
+                      </defs>
 
-                        {/* Liquid Container */}
-                        <g clipPath="url(#cup-clip)">
-                          <g 
-                            className="transition-transform duration-1000 ease-out" 
-                            style={{ transform: `translateY(${50 - (progress / 100) * 50}px)` }}
-                          >
-                            {/* Back wave */}
-                            <g style={{ animation: 'liquid-wave 3s linear infinite' }}>
-                              <path d="M -50 40 Q -37.5 32, -25 40 T 0 40 T 25 40 T 50 40 T 75 40 T 100 40 T 125 40 T 150 40 V 110 H -50 Z" fill="#60a5fa" fillOpacity="0.6" />
-                            </g>
-                            {/* Front wave */}
-                            <g style={{ animation: 'liquid-wave 2s linear infinite reverse' }}>
-                              <path d="M -50 40 Q -37.5 48, -25 40 T 0 40 T 25 40 T 50 40 T 75 40 T 100 40 T 125 40 T 150 40 V 110 H -50 Z" fill="#3b82f6" />
-                            </g>
-                          </g>
-                        </g>
+                      {/* Outer Glowing Background Aura */}
+                      <circle
+                        cx="50%"
+                        cy="50%"
+                        r="22"
+                        fill="url(#center-glowing)"
+                        className="animate-[aura-pulse_3.5s_ease-in-out_infinite]"
+                      />
 
-                        {/* Cup Handle */}
-                        <path d="M 75 45 L 82 45 Q 87 45, 87 50 L 87 58 Q 87 63, 82 63 L 75 63" fill="none" stroke="#d1d5db" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      {/* Technical Coordinates Grid Lines */}
+                      <path
+                        d="M 50 6 L 50 14 M 50 86 L 50 94 M 6 50 L 14 50 M 86 50 L 94 50"
+                        stroke="rgba(255,255,255,0.15)"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                      />
 
-                        {/* Cup Outline */}
-                        <path d="M 25 40 L 25 70 C 25 85, 30 95, 50 95 C 70 95, 75 85, 75 70 L 75 40 Q 75 35, 70 35 L 30 35 Q 25 35, 25 40 Z" fill="none" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                      {/* Outer Clockwise Tech Ring */}
+                      <g
+                        className="origin-center"
+                        style={{
+                          animation: "spin-clockwise 18s linear infinite",
+                        }}
+                      >
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="38"
+                          fill="none"
+                          stroke="rgba(99,102,241,0.12)"
+                          strokeWidth="1"
+                        />
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="38"
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth="2"
+                          strokeDasharray="35 15 10 35 5 15"
+                          strokeLinecap="round"
+                          filter="url(#neon-glow)"
+                        />
+                        <circle cx="88" cy="50%" r="2" fill="#818cf8" />
+                        <circle cx="12" cy="50%" r="2" fill="#a78bfa" />
+                      </g>
 
-                        {/* Base Line */}
-                        <line x1="22" y1="102" x2="66" y2="102" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" />
-                        <line x1="74" y1="102" x2="76" y2="102" stroke="#d1d5db" strokeWidth="3.5" strokeLinecap="round" />
-                      </svg>
-                    </div>
+                      {/* Middle Counter-Clockwise Tech Ring */}
+                      <g
+                        className="origin-center"
+                        style={{
+                          animation:
+                            "spin-counterclockwise 12s linear infinite",
+                        }}
+                      >
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="29"
+                          fill="none"
+                          stroke="rgba(168,85,247,0.08)"
+                          strokeWidth="1"
+                        />
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="29"
+                          fill="none"
+                          stroke="#a855f7"
+                          strokeWidth="1.5"
+                          strokeDasharray="15 20 45 10"
+                          strokeLinecap="round"
+                        />
+                      </g>
 
-                    <div className="flex items-center text-2xl font-bold tracking-wide text-[#d1d5db] mt-2">
-                      <span>Loading</span>
-                      <span className="flex gap-1.5 items-end pb-1.5 ml-2">
-                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0s]" />
-                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0.15s]" />
-                        <div className="w-[5px] h-[5px] rounded-full bg-[#d1d5db] animate-[bounce_1s_infinite_0.3s]" />
+                      {/* Scanner Frame Box */}
+                      <rect
+                        x="22"
+                        y="22"
+                        width="56"
+                        height="56"
+                        rx="14"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.06)"
+                        strokeWidth="1.5"
+                      />
+
+                      {/* Elegant Corner Brackets */}
+                      <path
+                        d="M 28 22 L 22 22 L 22 28"
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M 72 22 L 78 22 L 78 28"
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M 28 78 L 22 78 L 22 72"
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M 72 78 L 78 78 L 78 72"
+                        fill="none"
+                        stroke="#6366f1"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Central Neural Hexagon / Core */}
+                      <g className="origin-center animate-[aura-pulse_2.2s_ease-in-out_infinite]">
+                        <polygon
+                          points="50,37 61,44 61,56 50,63 39,56 39,44"
+                          fill="none"
+                          stroke="#a855f7"
+                          strokeWidth="1.5"
+                        />
+                        <polygon
+                          points="50,41 58,46 58,54 50,59 42,54 42,46"
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth="1"
+                        />
+                        <circle
+                          cx="50%"
+                          cy="50%"
+                          r="4.5"
+                          fill="#ffffff"
+                          filter="url(#neon-glow)"
+                        />
+                      </g>
+
+                      {/* Dynamic Sweeping laser line */}
+                      <g
+                        style={{
+                          animation: "laser-scan 3.5s ease-in-out infinite",
+                        }}
+                      >
+                        <line
+                          x1="22"
+                          y1="22"
+                          x2="78"
+                          y2="22"
+                          stroke="url(#laser-gradient)"
+                          strokeWidth="2"
+                          filter="url(#neon-glow)"
+                        />
+                        <linearGradient
+                          id="laser-gradient"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="#6366f1"
+                            stopOpacity="0"
+                          />
+                          <stop
+                            offset="15%"
+                            stopColor="#6366f1"
+                            stopOpacity="0.6"
+                          />
+                          <stop
+                            offset="50%"
+                            stopColor="#ffffff"
+                            stopOpacity="1"
+                          />
+                          <stop
+                            offset="85%"
+                            stopColor="#a855f7"
+                            stopOpacity="0.6"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="#a855f7"
+                            stopOpacity="0"
+                          />
+                        </linearGradient>
+                      </g>
+
+                      {/* Small decorative matrix points */}
+                      <circle
+                        cx="34"
+                        cy="34"
+                        r="1.5"
+                        fill="#c084fc"
+                        className="animate-[particle-float_4.5s_ease-in-out_infinite]"
+                      />
+                      <circle
+                        cx="66"
+                        cy="66"
+                        r="1.5"
+                        fill="#818cf8"
+                        className="animate-[particle-float_3.2s_ease-in-out_infinite_0.7s]"
+                      />
+                      <circle
+                        cx="31"
+                        cy="62"
+                        r="1.2"
+                        fill="#818cf8"
+                        className="animate-[particle-float_5.5s_ease-in-out_infinite_1.2s]"
+                      />
+                      <circle
+                        cx="69"
+                        cy="31"
+                        r="1.2"
+                        fill="#c084fc"
+                        className="animate-[particle-float_3.8s_ease-in-out_infinite_1.7s]"
+                      />
+                    </svg>
+                  </div>
+
+                  <div className="flex flex-col items-center mt-6 text-center gap-2">
+                    <div className="flex items-center gap-2.5 text-base md:text-lg font-black tracking-wide text-white bg-white/[0.03] px-5 py-2.5 rounded-2xl border border-white/5 shadow-xl backdrop-blur-md">
+                      <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                      <span
+                        className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-purple-400 font-sans"
+                        dir="rtl"
+                      >
+                        {getLoadingMessage(progress).ar}
                       </span>
                     </div>
+                    <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest mt-1">
+                      {getLoadingMessage(progress).en}
+                    </p>
+                  </div>
 
-                    <div className="mt-4 text-neutral-500 font-mono text-sm">{progress}%</div>
+                  <div className="mt-5 flex items-center gap-2">
+                    <div className="bg-indigo-500/10 text-indigo-400 font-mono text-sm font-black px-4 py-1.5 rounded-full border border-indigo-500/20 shadow-lg shadow-indigo-500/5 tracking-wider flex items-center gap-1.5 animate-pulse">
+                      <span>RENDER ENGINE</span>
+                      <span className="w-1 h-3 bg-indigo-400/30 rounded-full"></span>
+                      <span className="text-white">{progress}%</span>
+                    </div>
                   </div>
                 </div>
-              ) : imageUrls.length > 0 ? (
-                <div className={`m-auto w-full grid gap-6 md:gap-8 max-w-6xl ${
-                  imageUrls.length === 1 ? 'grid-cols-1 max-w-3xl' : 
-                  imageUrls.length === 2 ? 'grid-cols-1 xl:grid-cols-2' : 
-                  'grid-cols-1 md:grid-cols-2 xl:grid-cols-2'
-                }`}>
-                  {imageUrls.map((url, i) => (
-                    <motion.div 
-                      key={i} 
-                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.1 }}
-                      className="group relative bg-[#1a1a1a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:border-blue-500/50 transition-all flex items-center justify-center min-h-[200px]"
-                    >
-                       <img src={getDisplayUrl(url)} alt={`نتيجة ${i+1}`} className="w-full h-auto max-h-[60vh] object-contain group-hover:scale-[1.02] transition-transform duration-700" referrerPolicy="no-referrer" />
-                       
-                       <div className="absolute inset-0 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/95 via-black/40 to-black/95">
-                         {/* Top Actions */}
-                         <div className="flex justify-between items-start p-4">
-                            <span className="bg-black/50 text-white/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold font-mono tracking-widest border border-white/10">RES {i+1}</span>
-                            <div className="flex gap-2">
-                               <button onClick={() => setSelectedImage(url)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors border border-white/10"><Maximize2 className="w-3.5 h-3.5" /></button>
-                               <button onClick={() => openCropModal(url)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors border border-white/10"><Crop className="w-3.5 h-3.5" /></button>
+              </div>
+            ) : imageUrls.length > 0 ? (
+              <div
+                className={`m-auto w-full grid gap-6 md:gap-8 max-w-6xl ${
+                  imageUrls.length === 1
+                    ? "grid-cols-1 max-w-3xl"
+                    : imageUrls.length === 2
+                      ? "grid-cols-1 xl:grid-cols-2"
+                      : "grid-cols-1 md:grid-cols-2 xl:grid-cols-2"
+                }`}
+              >
+                {imageUrls.map((url, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className="group relative bg-[#1a1a1a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:border-blue-500/50 transition-all flex items-center justify-center min-h-[200px]"
+                  >
+                    <img
+                      src={getDisplayUrl(url)}
+                      alt={`نتيجة ${i + 1}`}
+                      className="w-full h-auto max-h-[60vh] object-contain group-hover:scale-[1.02] transition-transform duration-700"
+                      referrerPolicy="no-referrer"
+                    />
+
+                    <div className="absolute inset-0 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/95 via-black/40 to-black/95">
+                      {/* Top Actions */}
+                      <div className="flex justify-between items-start p-4">
+                        <span className="bg-black/50 text-white/70 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold font-mono tracking-widest border border-white/10">
+                          RES {i + 1}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedImage(url)}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors border border-white/10"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => openCropModal(url)}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-colors border border-white/10"
+                          >
+                            <Crop className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Prompt display inside Card */}
+                      {getPromptForUrl(url) && (
+                        <div
+                          className="px-4 text-right cursor-auto pointer-events-auto flex-1 flex flex-col justify-center"
+                          dir="rtl"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="bg-[#0c0c12]/92 border border-white/15 rounded-2xl p-3.5 backdrop-blur-md shadow-xl flex flex-col gap-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
+                            <div className="flex items-center justify-between text-[10px] text-neutral-400 border-b border-white/5 pb-1">
+                              <span className="font-bold text-neutral-300 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-indigo-400" />{" "}
+                                وصف التوليد
+                              </span>
+                              <div className="flex gap-2.5">
+                                <button
+                                  onClick={() =>
+                                    handleCopyPrompt(getPromptForUrl(url))
+                                  }
+                                  className="text-[10px] text-neutral-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-1.5 py-0.5 rounded border border-white/5 flex items-center gap-1"
+                                >
+                                  <Copy className="w-3 h-3 text-neutral-400" />
+                                  <span>نسخ</span>
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleApplyPrompt(getPromptForUrl(url))
+                                  }
+                                  className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-1.5 py-0.5 rounded border border-indigo-500/10 flex items-center gap-1"
+                                >
+                                  <Sparkles className="w-3 h-3 text-indigo-500" />
+                                  <span>تطبيق</span>
+                                </button>
+                              </div>
                             </div>
-                         </div>
+                            <p
+                              className="text-[11px] text-neutral-200 leading-relaxed font-sans line-clamp-3 hover:line-clamp-none transition-all selection:bg-indigo-650/40"
+                              dir="auto"
+                            >
+                              {getPromptForUrl(url)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
-                         {/* Prompt display inside Card */}
-                         {false && (
-                           <div className="px-4 text-right cursor-auto pointer-events-auto flex-1 flex flex-col justify-center" dir="rtl" onClick={(e) => e.stopPropagation()}>
-                             <div className="bg-[#0c0c12]/92 border border-white/15 rounded-2xl p-3.5 backdrop-blur-md shadow-xl flex flex-col gap-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
-                               <div className="flex items-center justify-between text-[10px] text-neutral-400 border-b border-white/5 pb-1">
-                                 <span className="font-bold text-neutral-300 flex items-center gap-1"><Sparkles className="w-3 h-3 text-indigo-400" /> وصف التوليد</span>
-                                 <div className="flex gap-2.5">
-                                   <button onClick={() => handleCopyPrompt(getPromptForUrl(url))} className="text-[10px] text-neutral-300 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-1.5 py-0.5 rounded border border-white/5">نسخ</button>
-                                   <button onClick={() => handleApplyPrompt(getPromptForUrl(url))} className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 hover:bg-indigo-500/20 px-1.5 py-0.5 rounded border border-indigo-500/10">تطبيق</button>
-                                 </div>
-                               </div>
-                               <p className="text-[11px] text-neutral-200 leading-relaxed font-sans line-clamp-3 hover:line-clamp-none transition-all selection:bg-indigo-650/40" dir="auto">
-                                 {getPromptForUrl(url)}
-                               </p>
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Bottom Actions */}
-                         <div className="p-4 sm:p-5 flex flex-wrap gap-2 justify-center pb-6 sm:pb-5">
-                            <button onClick={() => handleUseAsInput(url)} className="flex items-center gap-2 bg-blue-600/90 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-blue-400/30 backdrop-blur-sm">
-                              <ImagePlus className="w-3.5 h-3.5" /> مرجع
-                            </button>
-                            <button onClick={() => handleUpscale(url)} disabled={isUpscaling === url} className="flex items-center gap-2 bg-purple-600/90 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-purple-400/30 backdrop-blur-sm disabled:opacity-50">
-                              {isUpscaling === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />} تكبير
-                            </button>
-                            <button onClick={() => openTemplateModal(url)} className="flex items-center justify-center w-10 h-10 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-indigo-400/30 backdrop-blur-sm" title="وضع في قالب">
-                              <LayoutTemplate className="w-3.5 h-3.5" />
-                            </button>
+                      {/* Bottom Actions */}
+                      <div className="p-4 sm:p-5 flex flex-wrap gap-2 justify-center pb-6 sm:pb-5">
+                        <button
+                          onClick={() => handleUseAsInput(url)}
+                          className="flex items-center gap-2 bg-blue-600/90 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-blue-400/30 backdrop-blur-sm"
+                        >
+                          <ImagePlus className="w-3.5 h-3.5" /> مرجع
+                        </button>
+                        <button
+                          onClick={() => handleUpscale(url)}
+                          disabled={isUpscaling === url}
+                          className="flex items-center gap-2 bg-purple-600/90 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg border border-purple-400/30 backdrop-blur-sm disabled:opacity-50"
+                        >
+                          {isUpscaling === url ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Zap className="w-3.5 h-3.5" />
+                          )}{" "}
+                          تكبير
+                        </button>
+                        <button
+                          onClick={() => openTemplateModal(url)}
+                          className="flex items-center justify-center w-10 h-10 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-indigo-400/30 backdrop-blur-sm"
+                          title="وضع في قالب"
+                        >
+                          <LayoutTemplate className="w-3.5 h-3.5" />
+                        </button>
 
-
-                          <button onClick={() => handleDownload(url)} className="flex items-center justify-center w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-white/10 backdrop-blur-sm" title="تنزيل">
-                              <Download className="w-3.5 h-3.5" />
-                            </button>
-                         </div>
-
-                       </div>
-                    </motion.div>
-                  ))}
+                        <button
+                          onClick={() => handleDownload(url)}
+                          className="flex items-center justify-center w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-transform active:scale-95 shadow-lg border border-white/10 backdrop-blur-sm"
+                          title="تنزيل"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="m-auto flex flex-col items-center justify-center text-center opacity-30 max-w-sm">
+                <div className="w-32 h-32 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-6 bg-white/5">
+                  <ImageIcon className="w-10 h-10 text-neutral-400" />
                 </div>
-              ) : (
-                <div className="m-auto flex flex-col items-center justify-center text-center opacity-30 max-w-sm">
-                   <div className="w-32 h-32 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-6 bg-white/5">
-                     <ImageIcon className="w-10 h-10 text-neutral-400" />
-                   </div>
-                   <p className="text-xl font-bold text-white mb-2 tracking-tight">لوحة الإبداع فارغة</p>
-                   <p className="text-sm text-neutral-400 leading-relaxed">أدخل وصفك في القائمة الجانبية واضغط على "توليد إبداع جديد" لتطبع خيالك هنا.</p>
-                </div>
-              )}
-           </div>
+                <p className="text-xl font-bold text-white mb-2 tracking-tight">
+                  لوحة الإبداع فارغة
+                </p>
+                <p className="text-sm text-neutral-400 leading-relaxed">
+                  أدخل وصفك في القائمة الجانبية واضغط على "توليد إبداع جديد"
+                  لتطبع خيالك هنا.
+                </p>
+              </div>
+            )}
+          </div>
 
-           {/* History Strip */}
-           {history.length > 0 && (
-             <div className="shrink-0 bg-[#0a0a0a] border-t border-white/5 z-20 flex flex-col">
-                <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 shrink-0">
-                   <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-                     <Clock className="w-3 h-3" /> سجل التوليد
-                   </h3>
-                   <button onClick={async () => {
-                     if (user) {
-                       try { for (const item of history) { await deleteDoc(doc(db, `users/${user.uid}/projects/${projectId}/history`, item.id)); } } 
-                       catch (err) { handleFirestoreError(err, OperationType.DELETE, `users/${user.uid}/projects/${projectId}/history`); }
-                     } else { setHistory([]); localStorage.removeItem(`xreef_history_${projectId}`); }
-                   }} className="text-[10px] text-red-500 hover:text-red-400 font-medium px-2 py-1 bg-red-500/10 rounded-md transition-colors">
-                     مسح السجل
-                   </button>
-                </div>
-                <div className="flex-none px-6 py-3 overflow-x-auto overflow-y-hidden flex flex-nowrap gap-4 custom-scrollbar pb-4">
-                   {history.map((item) => (
-                     <div key={item.id} className="relative group shrink-0 w-[124px] h-[70px] sm:w-[160px] sm:h-[90px] rounded-xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg bg-[#141414] flex items-center justify-center" onClick={() => setSelectedImage(item.url)}>
-                       <img src={getDisplayUrl(item.url)} alt="" className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" referrerPolicy="no-referrer" loading="lazy" />
-                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                         <p className="text-[8px] text-white/90 line-clamp-2 leading-tight" dir="rtl">{item.prompt}</p>
-                       </div>
-                     </div>
-                   ))}
-                </div>
-             </div>
-           )}
+          {/* History Strip */}
+          {history.some((item) => !item.deleted) && (
+            <div className="shrink-0 bg-[#0a0a0a] border-t border-white/5 z-20 flex flex-col">
+              <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 shrink-0">
+                <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="w-3 h-3" /> سجل التوليد
+                </h3>
+              </div>
+              <div className="flex-none px-6 py-3 overflow-x-auto overflow-y-hidden flex flex-nowrap gap-4 custom-scrollbar pb-4">
+                {history.filter((item) => !item.deleted).map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative group shrink-0 w-[124px] h-[70px] sm:w-[160px] sm:h-[90px] rounded-xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg bg-[#141414] flex items-center justify-center"
+                    onClick={() => setSelectedImage(item.url)}
+                  >
+                    <img
+                      src={getDisplayUrl(item.url)}
+                      alt=""
+                      className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                      <div className="flex justify-between items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => handleCopyPrompt(item.prompt)}
+                          className="flex-1 text-[8px] bg-white/10 hover:bg-white/20 text-white rounded px-1 py-0.5 transition-all flex items-center justify-center gap-0.5 font-bold"
+                          title="نسخ الوصف"
+                        >
+                          <Copy className="w-2 h-2" />
+                          <span>نسخ</span>
+                        </button>
+                        <button
+                          onClick={() => handleApplyPrompt(item.prompt)}
+                          className="flex-1 text-[8px] bg-indigo-600 hover:bg-indigo-500 text-white rounded px-1 py-0.5 transition-all flex items-center justify-center gap-0.5 font-bold"
+                          title="تطبيق الوصف"
+                        >
+                          <Sparkles className="w-2 h-2" />
+                          <span>تطبيق</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteHistoryItem(item.id, item.url)}
+                          className="text-[8px] bg-red-600/80 hover:bg-red-500 text-white rounded px-1.5 py-0.5 transition-all flex items-center justify-center gap-0.5 font-bold shrink-0"
+                          title="مسح الصورة"
+                        >
+                          <Trash2 className="w-2 h-2" />
+                        </button>
+                      </div>
+                      <p
+                        className="text-[8px] text-white/90 line-clamp-2 leading-tight text-right pointer-events-none"
+                        dir="rtl"
+                      >
+                        {item.prompt}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
-
       </main>
     </div>
   );

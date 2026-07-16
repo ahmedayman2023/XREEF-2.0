@@ -148,7 +148,7 @@ async function startServer() {
 
   app.post("/api/generate", async (req, res) => {
     try {
-      const { prompt, image, images, aspectRatio, resolution, negativePrompt } = req.body;
+      const { prompt, image, images, aspectRatio, resolution, negativePrompt, promptSimilarity, controlType, imageStrength } = req.body;
       if (!prompt) {
         return res.status(400).json({ error: "Prompt is required" });
       }
@@ -180,6 +180,15 @@ async function startServer() {
       }
       if (resolution) {
         input.resolution = resolution === "8K" ? "4K" : resolution;
+      }
+      if (promptSimilarity !== undefined) {
+        input.prompt_similarity = promptSimilarity;
+      }
+      if (controlType !== undefined) {
+        input.control_type = controlType;
+      }
+      if (imageStrength !== undefined) {
+        input.image_strength = imageStrength;
       }
       if (inputImages && inputImages.length > 0) {
         input.image = inputImages[0];

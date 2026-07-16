@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import StartupHello from './components/StartupHello';
 
 const ProjectsPage = lazy(() => import('./components/ProjectsPage'));
+const EmployeeProjectsPage = lazy(() => import('./components/EmployeeProjectsPage'));
 const ProjectWorkspace = lazy(() => import('./components/ProjectWorkspace'));
 const GalleryPage = lazy(() => import('./components/GalleryPage'));
 const SupportPage = lazy(() => import('./components/SupportPage'));
@@ -23,7 +24,8 @@ export default function App() {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={<ProjectsPage />} />
-            <Route path="/project/:projectId" element={<ProjectWorkspace />} />
+            <Route path="/employee/:employeeId" element={<EmployeeProjectsPage />} />
+            <Route path="/employee/:employeeId/project/:projectId" element={<ProjectWorkspace />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />

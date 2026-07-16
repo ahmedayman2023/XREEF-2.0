@@ -6,9 +6,9 @@ import {
   ChevronLeft, ChevronRight, X, ZoomIn, Info, Check, Filter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, db, signInWithGoogle, logOut, handleFirestoreError, OperationType, fetchFolders } from '../firebase';
+import { auth, db, signInWithGoogle, logOut, handleFirestoreError, OperationType, fetchFolders, fetchEmployees } from '../firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, onSnapshot, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, deleteDoc, doc, collectionGroup, where } from 'firebase/firestore';
 import Scene3D from './Scene3D';
 
 interface ProjectFolder {
@@ -24,6 +24,7 @@ interface GalleryItem {
   timestamp: number;
   folderId: string;
   folderName: string;
+  employeeId?: string;
 }
 
 const ARABIC_MONTHS = [
@@ -40,12 +41,13 @@ const getDisplayUrl = (url: string) => {
 };
 
 export default function GalleryPage() {
-  const [folders, setFolders] = useState<ProjectFolder[]>([]);
   const [images, setImages] = useState<GalleryItem[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
   
   // Lightbox State
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -58,6 +60,19 @@ export default function GalleryPage() {
 
   const navigate = useNavigate();
 
+  // Dynamic folders list extracted from loaded images
+  const folders = useMemo<ProjectFolder[]>(() => {
+    const list: ProjectFolder[] = [];
+    const seen = new Set<string>();
+    images.forEach(img => {
+      if (img.folderId && img.folderName && !seen.has(img.folderId)) {
+        seen.add(img.folderId);
+        list.push({ id: img.folderId, folderName: img.folderName, createdAt: img.timestamp });
+      }
+    });
+    return list;
+  }, [images]);
+
   // Handle Authentication Change
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -67,81 +82,64 @@ export default function GalleryPage() {
     return () => unsubscribe();
   }, []);
 
+  // Fetch Employees
+  useEffect(() => {
+    if (!isAuthReady || !user) {
+      setEmployees([]);
+      return;
+    }
+    const unsub = fetchEmployees((fetchedEmployees) => {
+      setEmployees(fetchedEmployees);
+    });
+    return () => unsub();
+  }, [user, isAuthReady]);
+
   // Fetch Folders and their Histories
   useEffect(() => {
     if (!isAuthReady) return;
 
     if (!user) {
-      setFolders([]);
       setImages([]);
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
+
+    const historyGroupRef = collectionGroup(db, 'history');
+    const q = query(historyGroupRef, where('userId', '==', user.uid), orderBy('timestamp', 'desc'));
     
-    // 1. Fetch all folders
-    const unsubscribeFolders = fetchFolders((fetchedFolders) => {
-      const foldersList = fetchedFolders as ProjectFolder[];
-      setFolders(foldersList);
-
-      if (foldersList.length === 0) {
-        setImages([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Setup real-time listeners for each folder's history subcollection
-      const unsubscribesHistory: (() => void)[] = [];
-      const historyStorage: { [folderId: string]: any[] } = {};
-
-      foldersList.forEach((folder) => {
-        const historyRef = collection(db, `users/${user.uid}/projects/${folder.id}/history`);
-        const qHistory = query(historyRef, orderBy('timestamp', 'desc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const allImages: GalleryItem[] = [];
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         
-        const unsub = onSnapshot(qHistory, (snapshot) => {
-          const folderHistory: any[] = [];
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            folderHistory.push({
-              id: docSnap.id,
-              url: data.url,
-              prompt: data.prompt || '',
-              timestamp: data.timestamp || Date.now(),
-              folderId: folder.id,
-              folderName: folder.folderName
-            });
-          });
+        // Extract from reference path
+        const pathParts = docSnap.ref.path.split('/');
+        let extractedEmployeeId = data.employeeId || '';
+        if (!extractedEmployeeId && pathParts.length >= 8 && pathParts[2] === 'employees') {
+          extractedEmployeeId = pathParts[3];
+        }
 
-          historyStorage[folder.id] = folderHistory;
-          
-          // Flatten all folders history to construct the main gallery active state
-          const allImages: GalleryItem[] = [];
-          foldersList.forEach(f => {
-            if (historyStorage[f.id]) {
-              allImages.push(...historyStorage[f.id]);
-            }
-          });
-
-          // Sort descending by timestamp
-          allImages.sort((a, b) => b.timestamp - a.timestamp);
-          setImages(allImages);
-          setIsLoading(false);
-        }, (err) => {
-          console.error(`Error loading history for folder ${folder.id}:`, err);
+        allImages.push({
+          id: docSnap.id,
+          url: data.url,
+          prompt: data.prompt || '',
+          timestamp: data.timestamp || Date.now(),
+          folderId: data.projectId || data.folderId || '',
+          folderName: data.projectName || data.folderName || '',
+          employeeId: extractedEmployeeId
         });
-
-        unsubscribesHistory.push(unsub);
       });
-
-      return () => {
-        unsubscribesHistory.forEach(unsub => unsub());
-      };
+      
+      setImages(allImages);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching gallery images:", error);
+      setIsLoading(false);
     });
-
-    return () => {
-      unsubscribeFolders();
-    };
+    
+    return () => unsub();
   }, [user, isAuthReady]);
 
   // Handle Login
@@ -195,6 +193,59 @@ export default function GalleryPage() {
         ...groups[key]
       }));
   }, [filteredImages]);
+
+  // Grouped and Calculated Monthly Consumption Metric per Employee
+  const monthlyEmployeeStats = useMemo(() => {
+    const stats: { 
+      [monthKey: string]: { 
+        monthName: string;
+        totalImages: number;
+        employeeCounts: { [employeeId: string]: number };
+      } 
+    } = {};
+
+    images.forEach((img) => {
+      const date = new Date(img.timestamp);
+      const year = date.getFullYear();
+      const monthIdx = date.getMonth();
+      const monthKey = `${year}-${(monthIdx + 1).toString().padStart(2, '0')}`;
+      const monthName = `${ARABIC_MONTHS[monthIdx]} ${year}`;
+      const empId = img.employeeId || 'unknown';
+
+      if (!stats[monthKey]) {
+        stats[monthKey] = {
+          monthName,
+          totalImages: 0,
+          employeeCounts: {}
+        };
+      }
+
+      stats[monthKey].totalImages += 1;
+      stats[monthKey].employeeCounts[empId] = (stats[monthKey].employeeCounts[empId] || 0) + 1;
+    });
+
+    return Object.keys(stats)
+      .sort((a, b) => b.localeCompare(a))
+      .map(key => {
+        const item = stats[key];
+        const employeesList = Object.keys(item.employeeCounts).map(empId => {
+          const matchingEmployee = employees.find(e => e.id === empId);
+          return {
+            id: empId,
+            name: matchingEmployee ? matchingEmployee.name : (empId === 'unknown' ? 'غير محدد' : `موظف مجهول (${empId})`),
+            count: item.employeeCounts[empId],
+            percentage: Math.round((item.employeeCounts[empId] / item.totalImages) * 100)
+          };
+        }).sort((a, b) => b.count - a.count);
+
+        return {
+          monthKey: key,
+          monthName: item.monthName,
+          totalImages: item.totalImages,
+          employees: employeesList
+        };
+      });
+  }, [images, employees]);
 
   // Copy Prompt Clipboard
   const handleCopyPrompt = (id: string, text: string, e: React.MouseEvent) => {
@@ -357,9 +408,6 @@ export default function GalleryPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-4 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <Sparkles className="text-white w-5 h-5" />
-              </div>
               <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XREEF 2.0</h1>
             </Link>
             
@@ -445,6 +493,87 @@ export default function GalleryPage() {
               <p className="text-2xl font-black text-purple-400 font-sans">{folders.length}</p>
             </div>
           </div>
+        </div>
+
+        {/* Monthly Employee Stats dashboard panel */}
+        <div className="mb-12 bg-white/[0.02] border border-white/5 rounded-[2rem] p-6 backdrop-blur-md overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full"></div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/20">
+                <Sparkles size={20} className="animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">إحصائيات استهلاك الموظفين للصور / Monthly Image Meter</h3>
+                <p className="text-xs text-neutral-400 mt-1">تتبع واحتساب عدد الصور التي تم استهلاكها شهرياً بواسطة كل موظف</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowStats(!showStats)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/25 border border-indigo-500/20 text-xs font-bold transition duration-200"
+            >
+              <span>{showStats ? "إخفاء لوحة الاستهلاك" : "عرض إحصائيات استهلاك الموظفين شهرياً"}</span>
+              <span className="text-indigo-400 font-sans text-xs">{showStats ? "▲" : "▼"}</span>
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showStats && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-6 mt-6 border-t border-white/5 space-y-8">
+                  {monthlyEmployeeStats.length === 0 ? (
+                    <p className="text-neutral-400 text-sm text-center py-6">لا توجد بيانات استهلاك مسجلة حتى الآن.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {monthlyEmployeeStats.map((stat) => (
+                        <div 
+                          key={stat.monthKey} 
+                          className="bg-black/45 border border-white/5 rounded-2xl p-5 relative flex flex-col justify-between"
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <Calendar size={16} className="text-indigo-400" />
+                              <span className="font-bold text-base text-white">{stat.monthName}</span>
+                            </div>
+                            <span className="px-3 py-1 bg-indigo-500/10 text-indigo-300 rounded-lg text-xs font-bold border border-indigo-500/25">
+                              الإجمالي: {stat.totalImages} صورة
+                            </span>
+                          </div>
+
+                          <div className="space-y-3.5">
+                            {stat.employees.map((emp) => (
+                              <div key={emp.id} className="space-y-1.5">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-neutral-200 font-bold">{emp.name}</span>
+                                  <span className="text-indigo-300 font-bold font-sans bg-white/[0.03] px-2.5 py-0.5 rounded border border-white/5">
+                                    {emp.count} صورة ({emp.percentage}%)
+                                  </span>
+                                </div>
+                                <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                  <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${emp.percentage}%` }}
+                                    transition={{ duration: 0.5, delay: 0.1 }}
+                                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Toolbar & Filter Options */}
@@ -750,7 +879,6 @@ export default function GalleryPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
           <div className="flex flex-col gap-2 text-center md:text-right">
             <div className="flex items-center justify-center md:justify-start gap-2 text-white font-bold mb-1">
-              <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center text-[10px]">XR</div>
               <span>XREEF 2.0</span>
             </div>
           </div>

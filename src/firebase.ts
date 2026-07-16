@@ -202,4 +202,99 @@ export const fetchFolders = (callback: (folders: any[]) => void) => {
   return unsubscribe;
 };
 
+export const createEmployee = async (employeeName: string): Promise<string> => {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("User must be logged in to create an employee.");
+    
+    const employeeId = Date.now().toString();
+    const employeeRef = doc(db, `users/${currentUser.uid}/employees`, employeeId);
+    
+    await setDoc(employeeRef, {
+      id: employeeId,
+      name: employeeName,
+      createdAt: Date.now(),
+      projectCount: 0
+    });
+    
+    return employeeId;
+  } catch (error) {
+    console.error("Error creating employee:", error);
+    throw error;
+  }
+};
+
+export const fetchEmployees = (callback: (employees: any[]) => void) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return () => {};
+  
+  const employeesRef = collection(db, `users/${currentUser.uid}/employees`);
+  const qEmployees = query(employeesRef, orderBy('createdAt', 'desc'));
+  
+  return onSnapshot(qEmployees, (snapshot) => {
+    const data: any[] = [];
+    snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+    callback(data);
+  });
+};
+
+export const createEmployeeProject = async (employeeId: string, folderName: string): Promise<string> => {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("User must be logged in.");
+    
+    const projectId = Date.now().toString();
+    const projectRef = doc(db, `users/${currentUser.uid}/employees/${employeeId}/projects`, projectId);
+    
+    await setDoc(projectRef, {
+      id: projectId,
+      folderName,
+      createdAt: Date.now(),
+      images: [],
+      imageCount: 0
+    });
+    
+    // update project count
+    const employeeRef = doc(db, `users/${currentUser.uid}/employees`, employeeId);
+    await updateDoc(employeeRef, {
+      projectCount: increment(1)
+    });
+
+    return projectId;
+  } catch (error) {
+    console.error("Error creating project:", error);
+    throw error;
+  }
+};
+
+export const fetchEmployeeProjects = (employeeId: string, callback: (projects: any[]) => void) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return () => {};
+  
+  const projectsRef = collection(db, `users/${currentUser.uid}/employees/${employeeId}/projects`);
+  const qProjects = query(projectsRef, orderBy('createdAt', 'desc'));
+  
+  return onSnapshot(qProjects, (snapshot) => {
+    const data: any[] = [];
+    snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+    callback(data);
+  });
+};
+
+export const deleteEmployee = async (employeeId: string) => {
+   const currentUser = auth.currentUser;
+   if (!currentUser) return;
+   const docRef = doc(db, `users/${currentUser.uid}/employees`, employeeId);
+   const { deleteDoc } = await import('firebase/firestore');
+   await deleteDoc(docRef);
+};
+
+export const deleteEmployeeProject = async (employeeId: string, projectId: string) => {
+   const currentUser = auth.currentUser;
+   if (!currentUser) return;
+   const docRef = doc(db, `users/${currentUser.uid}/employees/${employeeId}/projects`, projectId);
+   const { deleteDoc } = await import('firebase/firestore');
+   await deleteDoc(docRef);
+};
+
 export default app;

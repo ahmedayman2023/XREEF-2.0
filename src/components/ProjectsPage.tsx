@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Trash2, X, LifeBuoy, Loader2, Sparkles, LogOut, Image as ImageIcon, Search, LayoutGrid, Folder, Clock } from 'lucide-react';
+import { Plus, Trash2, X, LifeBuoy, Loader2, Sparkles, LogOut, Image as ImageIcon, Search, LayoutGrid, Folder, Clock, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, db, signInWithGoogle, logOut, handleFirestoreError, OperationType, fetchFolders, createProjectFolder } from '../firebase';
+import { auth, db, signInWithGoogle, logOut, handleFirestoreError, OperationType, fetchEmployees, createEmployee, deleteEmployee } from '../firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
 import Scene3D from './Scene3D';
 
-interface ProjectFolder {
+interface EmployeeData {
   id: string;
-  folderName: string;
+  name: string;
   createdAt: number;
-  imageCount?: number;
+  projectCount?: number;
 }
 
 const getGradient = (id: string) => {
@@ -38,13 +38,21 @@ const getGreeting = () => {
   return 'طاب مساؤك';
 };
 
+const getDateInfo = () => {
+  const today = new Date();
+  const dayName = new Intl.DateTimeFormat('ar-EG', { weekday: 'long' }).format(today);
+  const gregorian = new Intl.DateTimeFormat('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+  const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' }).format(today);
+  return { dayName, gregorian, hijri };
+};
+
 export default function ProjectsPage() {
-  const [folders, setFolders] = useState<ProjectFolder[]>([]);
-  const [isLoadingFolders, setIsLoadingFolders] = useState(true);
+  const [employees, setEmployees] = useState<EmployeeData[]>([]);
+  const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<ProjectFolder | null>(null);
-  const [newProjectName, setNewProjectName] = useState('');
+  const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeData | null>(null);
+  const [newEmployeeName, setNewEmployeeName] = useState('');
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -68,27 +76,27 @@ export default function ProjectsPage() {
     if (!isAuthReady) return;
 
     if (user) {
-      setIsLoadingFolders(true);
+      setIsLoadingEmployees(true);
       setFetchError(null);
-      let unsubscribeFolders: (() => void) | undefined;
+      let unsubscribeEmployees: (() => void) | undefined;
       
       try {
-        unsubscribeFolders = fetchFolders((fetchedFolders) => {
-          setFolders(fetchedFolders as ProjectFolder[]);
-          setIsLoadingFolders(false);
+        unsubscribeEmployees = fetchEmployees((fetchedEmployees) => {
+          setEmployees(fetchedEmployees as EmployeeData[]);
+          setIsLoadingEmployees(false);
         });
       } catch (err: any) {
-        console.error("Failed to query folders collection from Firestore:", err);
-        setFetchError("لم نتمكن من الاتصال بالخادم لاسترجاع مجلداتك. يرجى المحاولة لاحقاً.");
-        setIsLoadingFolders(false);
+        console.error("Failed to query employees collection from Firestore:", err);
+        setFetchError("لم نتمكن من الاتصال بالخادم. يرجى المحاولة لاحقاً.");
+        setIsLoadingEmployees(false);
       }
 
       return () => {
-        if (unsubscribeFolders) unsubscribeFolders();
+        if (unsubscribeEmployees) unsubscribeEmployees();
       };
     } else {
-      setFolders([]);
-      setIsLoadingFolders(false);
+      setEmployees([]);
+      setIsLoadingEmployees(false);
     }
   }, [user, isAuthReady]);
 
@@ -104,42 +112,42 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleCreateProject = async (e?: React.FormEvent) => {
+  const handleCreateEmployee = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newProjectName.trim() || !user) return;
+    if (!newEmployeeName.trim() || !user) return;
 
     setActionError(null);
     try {
-      const newFolderId = await createProjectFolder(newProjectName.trim());
-      setNewProjectName('');
+      const newEmployeeId = await createEmployee(newEmployeeName.trim());
+      setNewEmployeeName('');
       setIsModalOpen(false);
-      navigate(`/project/${newFolderId}`);
+      navigate(`/employee/${newEmployeeId}`);
     } catch (err: any) {
-      console.error("Error creating folder in database:", err);
-      setActionError("فشل إنشاء المجلد. يرجى التحقق من اتصال شبكتك وإعادة المحاولة.");
+      console.error("Error creating employee in database:", err);
+      setActionError("فشل تسجيل الموظف. يرجى التحقق من الشبكة والمحاولة مجدداً.");
     }
   };
 
-  const deleteProject = (folder: ProjectFolder, e: React.MouseEvent) => {
+  const deleteEmployeeHandler = (employee: EmployeeData, e: React.MouseEvent) => {
     e.stopPropagation();
-    setProjectToDelete(folder);
+    setEmployeeToDelete(employee);
   };
 
   const confirmDelete = async () => {
-    if (!projectToDelete || !user) return;
+    if (!employeeToDelete || !user) return;
     setActionError(null);
     try {
-      await deleteDoc(doc(db, `users/${user.uid}/folders`, projectToDelete.id));
-      setProjectToDelete(null);
+      await deleteEmployee(employeeToDelete.id);
+      setEmployeeToDelete(null);
     } catch (err: any) {
-      console.error("Failed to delete folder document in Firestore:", err);
-      setActionError("فشل حذف المجلد المطلوب. يرجى المحاولة لاحقاً.");
+      console.error("Failed to delete employee document in Firestore:", err);
+      setActionError("فشل مسح بيانات الموظف. يرجى المحاولة لاحقاً.");
     }
   };
 
-  const filteredProjects = useMemo(() => {
-    return folders.filter(f => f.folderName.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [folders, searchQuery]);
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(e => e.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [employees, searchQuery]);
 
   if (!isAuthReady) {
     return (
@@ -257,9 +265,6 @@ export default function ProjectsPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-4 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <Sparkles className="text-white w-5 h-5" />
-              </div>
               <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XREEF 2.0</h1>
             </Link>
             
@@ -324,13 +329,28 @@ export default function ProjectsPage() {
             >
               {getGreeting()}، {user.displayName?.split(' ')[0] || 'المبدع'} <span className="opacity-70">✨</span>
             </motion.h2>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex items-center gap-3 text-blue-400 mb-6 font-medium text-sm md:text-base"
+            >
+              <Calendar className="w-5 h-5 opacity-80" />
+              <span>اليوم {getDateInfo().dayName}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50"></span>
+              <span>{getDateInfo().gregorian} م</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50"></span>
+              <span>{getDateInfo().hijri}</span>
+            </motion.div>
+
             <motion.p 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-neutral-400 text-lg max-w-2xl"
             >
-              مرحباً بك في مساحة عملك الخاصة. قم بتنظيم جميع مشاريع توليد الصور المتقدمة في مجلدات آمنة ومزامنتها لحظياً بالكامل.
+              مرحباً بك في مساحة عملك الخاصة. قم بإنشاء ملفات للموظفين وإدارة المشاريع الخاصة بكل موظف بسهولة وأمان.
             </motion.p>
           </div>
           
@@ -339,7 +359,7 @@ export default function ProjectsPage() {
              <div className="px-5 py-3 rounded-2xl border border-white/10 shadow-lg bg-black/40 backdrop-blur-md inline-flex items-center">
                 <div className="flex items-center gap-3">
                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_#10b981] animate-pulse"></div>
-                   <span className="text-xs font-bold text-neutral-300 uppercase tracking-widest">مجلدات السحابة نشطة</span>
+                   <span className="text-xs font-bold text-neutral-300 uppercase tracking-widest">لوحة الموظفين نشطة</span>
                 </div>
              </div>
           </div>
@@ -368,7 +388,7 @@ export default function ProjectsPage() {
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input 
               type="text"
-              placeholder="البحث في المجلدات والملفات..."
+              placeholder="البحث عن موظف..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#030712] border border-white/10 rounded-2xl py-3.5 pr-12 pl-4 text-white placeholder-neutral-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all font-medium text-sm"
@@ -381,7 +401,7 @@ export default function ProjectsPage() {
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transform hover:-translate-y-0.5 text-sm w-full md:w-auto"
              >
                 <Plus size={18} />
-                <span>إنشاء مجلد جديد</span>
+                <span>إضافة موظف جديد</span>
              </button>
              <div className="bg-white/5 border border-white/10 p-1 rounded-2xl flex items-center">
                  <button className="px-4 py-2 bg-white/10 rounded-xl text-white text-xs font-semibold shadow-sm transition-colors flex items-center gap-2">
@@ -392,11 +412,11 @@ export default function ProjectsPage() {
         </div>
 
         {/* Folders Workspace Content */}
-        {isLoadingFolders ? (
+        {isLoadingEmployees ? (
           <div className="py-24 flex flex-col items-center justify-center bg-white/[0.01] border border-white/5 rounded-[2.5rem] p-10 max-w-4xl mx-auto backdrop-blur-sm">
              <Loader2 className="w-14 h-14 text-blue-500 animate-spin mb-5" />
-             <h3 className="text-xl font-bold text-white mb-2">جاري استرجاع مجلداتك</h3>
-             <p className="text-neutral-400 text-sm">يقوم النظام بالمزامنة المباشرة مع Firestore لضمان استقرار لبياناتك...</p>
+             <h3 className="text-xl font-bold text-white mb-2">جاري استرجاع البيانات</h3>
+             <p className="text-neutral-400 text-sm">يقوم النظام بالمزامنة المباشرة مع الخادم...</p>
           </div>
         ) : (
           <div>
@@ -415,33 +435,33 @@ export default function ProjectsPage() {
                   <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all duration-300 mb-4 border border-white/5 group-hover:border-blue-500/20">
                     <Plus size={32} className="text-neutral-400 group-hover:text-blue-400 transition-colors" />
                   </div>
-                  <h3 className="font-bold text-lg text-neutral-300 group-hover:text-white transition-colors mb-2">إنشاء مجلد إبداعي</h3>
-                  <p className="text-xs text-neutral-500 text-center max-w-[180px]">اضغط هنا لتنظيم مجموعة جديدة من صور الذكاء الاصطناعي</p>
+                  <h3 className="font-bold text-lg text-neutral-300 group-hover:text-white transition-colors mb-2">إضافة موظف</h3>
+                  <p className="text-xs text-neutral-500 text-center max-w-[180px]">اضغط هنا لتسجيل موظف جديد</p>
                 </div>
               </motion.div>
 
               <AnimatePresence mode="popLayout animate-fadeIn">
-                {filteredProjects.map((folder, index) => (
+                {filteredEmployees.map((employee, index) => (
                   <motion.div 
                     layout
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    key={folder.id}
-                    onClick={() => navigate(`/project/${folder.id}`)}
-                    className="relative flex flex-col bg-[#0b0f19]/40 backdrop-blur-xl border border-white/[0.06] rounded-[2rem] p-6 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.15)] group overflow-hidden cursor-pointer"
+                    key={employee.id}
+                    onClick={() => navigate(`/employee/${employee.id}`)}
+                    className="relative flex flex-col bg-[#0b0f19]/80 backdrop-blur-xl border border-white/[0.06] rounded-[2rem] p-6 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.15)] group overflow-hidden cursor-pointer"
                   >
                     {/* Top actions & visual badges */}
                     <div className="flex items-start justify-between mb-5 select-none relative z-10">
-                       <div className={`p-4 rounded-2xl bg-gradient-to-br ${getGradient(folder.id)} text-white shadow-md relative group-hover:scale-105 transition-transform duration-300`}>
-                          <Folder className="w-8 h-8 opacity-90" />
-                          <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                       <div className={`p-4 rounded-2xl bg-gradient-to-br ${getGradient(employee.id)} text-white shadow-md relative group-hover:scale-105 transition-transform duration-300 overflow-hidden flex items-center justify-center`}>
+                          <Folder className="w-8 h-8 opacity-90 relative z-10" />
+                          <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
                        </div>
                        <button 
-                          onClick={(e) => deleteProject(folder, e)} 
-                          className="p-2.5 bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 rounded-xl transition-all border border-white/5"
-                          title="حذف المجلد"
+                          onClick={(e) => deleteEmployeeHandler(employee, e)} 
+                          className="p-2.5 bg-white/5 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 rounded-xl transition-all border border-white/5 backdrop-blur-md"
+                          title="حذف המوظف"
                        >
                           <Trash2 size={16} />
                        </button>
@@ -449,25 +469,21 @@ export default function ProjectsPage() {
 
                     {/* General Text Metadata */}
                     <div className="flex-1 relative z-10">
-                       <h2 className="font-bold text-xl text-white mb-2 leading-tight group-hover:text-blue-400 transition-colors truncate" title={folder.folderName}>
-                          {folder.folderName}
+                       <h2 className="font-bold text-xl text-white mb-2 leading-tight group-hover:text-blue-400 transition-colors truncate drop-shadow-sm" title={employee.name}>
+                          {employee.name}
                        </h2>
                        
                        <div className="flex items-center gap-2 text-xs text-neutral-400 mb-6 font-medium">
-                          <Clock size={12} className="opacity-60 text-blue-400" />
-                          <span>{new Date(folder.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                          <Clock size={12} className="opacity-80 text-blue-400 drop-shadow-sm" />
+                          <span className="drop-shadow-sm">{new Date(employee.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                        </div>
                     </div>
 
                     {/* Image Counter & Detail Footer Info */}
-                    <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] relative z-10">
-                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">محتويات السحابة</span>
-                       <div className={`flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r ${getGradient(folder.id)} bg-opacity-10 text-white text-xs font-bold rounded-full border border-white/10 shadow-sm`}>
-                          <span className="relative flex h-2 w-2">
-                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                             <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                          </span>
-                          <span>{folder.imageCount || 0} صور</span>
+                    <div className="flex items-center justify-between pt-4 border-t border-white/[0.08] relative z-10">
+                       <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest drop-shadow-sm">المشاريع</span>
+                       <div className={`flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r ${getGradient(employee.id)} bg-opacity-20 text-white text-xs font-bold rounded-full border border-white/20 shadow-lg backdrop-blur-md`}>
+                          <span className="drop-shadow-sm">{employee.projectCount || 0} مشاريع</span>
                        </div>
                     </div>
                   </motion.div>
@@ -478,18 +494,18 @@ export default function ProjectsPage() {
         )}
 
         {/* Secondary Empty State / Query Filter mismatch fallback */}
-        {!isLoadingFolders && searchQuery && filteredProjects.length === 0 && (
+        {!isLoadingEmployees && searchQuery && filteredEmployees.length === 0 && (
           <div className="py-24 text-center bg-white/[0.01] border border-white/5 rounded-[2rem] max-w-lg mx-auto backdrop-blur-sm">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
-               <Search className="w-8 h-8 text-neutral-500" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">لا توجد نتائج مطابقة</h3>
-            <p className="text-neutral-400 text-sm px-6">لا يتوفر أي مجلد به اسم يطابق البحث "{searchQuery}". يرجى التحقق من الأحرف والكلمات.</p>
+             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10">
+                <Search className="w-8 h-8 text-neutral-500" />
+             </div>
+             <h3 className="text-xl font-bold text-white mb-2">لا توجد نتائج مطابقة</h3>
+             <p className="text-neutral-400 text-sm px-6">لا يتوفر أي موظف به اسم يطابق البحث "{searchQuery}". يرجى التحقق من الأحرف والكلمات.</p>
           </div>
         )}
 
         {/* Core Empty State with actionable layout */}
-        {!isLoadingFolders && !searchQuery && folders.length === 0 && (
+        {!isLoadingEmployees && !searchQuery && employees.length === 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -502,9 +518,9 @@ export default function ProjectsPage() {
               </div>
             </div>
             
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">مساحة العمل فارغة</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">لا يوجد موظفين</h3>
             <p className="text-neutral-400 max-w-md mx-auto mb-10 leading-relaxed text-sm md:text-base">
-              ابدأ بتنظيم وإدارة إبداعاتك ومشاريعك التوليدية عن طريق إنشاء مجلدك الأول الآن للبدء برسم ملامح ذكائك الاصطناعي.
+              ابدأ بإضافة موظفين لإنشاء مساحات العمل والمشاريع التابعة لهم.
             </p>
             
             <button 
@@ -512,7 +528,7 @@ export default function ProjectsPage() {
               className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4.5 px-8 rounded-2xl transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transform hover:-translate-y-0.5"
             >
               <Plus size={20} />
-              <span>إنشاء المجلد الأول</span>
+              <span>إضافة موظف</span>
             </button>
           </motion.div>
         )}
@@ -524,7 +540,6 @@ export default function ProjectsPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
           <div className="flex flex-col gap-2 text-center md:text-right">
             <div className="flex items-center justify-center md:justify-start gap-2 text-white font-sans font-bold text-sm">
-              <div className="w-5 h-5 rounded bg-blue-600 flex items-center justify-center text-[10px]">XR</div>
               <span>XREEF 2.0</span>
             </div>
           </div>
@@ -555,36 +570,30 @@ export default function ProjectsPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl -z-10 rounded-full"></div>
               
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">مجلد سحابي جديد</h2>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-neutral-500 hover:bg-white/10 hover:text-white rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">مستخدم/موظف جديد</h2>
               </div>
               
-              <form onSubmit={handleCreateProject}>
+              <form onSubmit={handleCreateEmployee}>
                 <div className="space-y-6">
                   <div>
-                     <label className="block text-sm font-semibold text-neutral-400 mb-2">اسم المجلد</label>
+                     <label className="block text-sm font-semibold text-neutral-400 mb-2">اسم الموظف</label>
                      <input 
                        autoFocus
                        type="text"
-                       value={newProjectName}
-                       onChange={(e) => setNewProjectName(e.target.value)}
-                       placeholder="مثال: صور تسويقية، خيال علمي..."
+                       value={newEmployeeName}
+                       onChange={(e) => setNewEmployeeName(e.target.value)}
+                       placeholder="مثال: أحمد، سارة..."
                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all text-white placeholder-neutral-600 font-medium"
                      />
                   </div>
                   <div className="pt-2">
                      <button 
                        type="submit"
-                       disabled={!newProjectName.trim()}
+                       disabled={!newEmployeeName.trim()}
                        className="w-full bg-blue-600 hover:bg-blue-500 focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:hover:bg-blue-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg flex justify-center items-center gap-2"
                      >
                        <Plus size={20} />
-                       إنشاء مجلد العمل
+                       إضافة الموظف
                      </button>
                   </div>
                 </div>
@@ -596,13 +605,13 @@ export default function ProjectsPage() {
 
       {/* Renders delete confirmation modal */}
       <AnimatePresence>
-        {projectToDelete && (
+        {employeeToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setProjectToDelete(null)}
+              onClick={() => setEmployeeToDelete(null)}
               className="absolute inset-0 bg-black/70 backdrop-blur-md"
             />
             <motion.div 
@@ -617,15 +626,15 @@ export default function ProjectsPage() {
                 <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Trash2 className="text-red-500" size={28} />
                 </div>
-                <h2 className="text-xl font-bold mb-3 text-white">حذف المجلد نهائياً؟</h2>
+                <h2 className="text-xl font-bold mb-3 text-white">حذف המوظف نهائياً؟</h2>
                 <p className="text-neutral-400 mb-8 leading-relaxed text-sm">
-                  هل أنت متأكد تماماً من حذف مجلد <span className="text-white font-semibold block mb-1">"{projectToDelete.folderName}"</span>؟ 
-                  سيؤدي هذا إلى مسح سجل الصور المرتبطة به ولن تتمكن من التراجع عن هذا الإجراء.
+                  هل أنت متأكد تماماً من حذف الموظف <span className="text-white font-semibold block mb-1">"{employeeToDelete.name}"</span>؟ 
+                  سيؤدي هذا إلى مسح كل مشاريعه ولن تتمكن من التراجع.
                 </p>
                 
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => setProjectToDelete(null)}
+                    onClick={() => setEmployeeToDelete(null)}
                     className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3.5 rounded-2xl transition-all border border-white/5 text-sm"
                   >
                     تراجع
