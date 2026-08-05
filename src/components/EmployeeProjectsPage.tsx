@@ -134,7 +134,7 @@ export default function EmployeeProjectsPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-4 group">
-              <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XREEF 2.0</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XReef V3.0</h1>
             </Link>
           </div>
           <div className="flex items-center gap-4">

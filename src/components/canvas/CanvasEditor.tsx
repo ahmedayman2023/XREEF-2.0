@@ -273,9 +273,10 @@ function CanvasEditorInner() {
   const saveGeneratedImage = useCallback(
     async (id: string, outputUrl: string, promptText: string, sourceId: string) => {
       if (user && employeeId) {
-        let finalUrl = outputUrl;
+        let finalUrl: string;
         try {
           const res = await fetch(`/api/proxy?url=${encodeURIComponent(outputUrl)}`);
+          if (!res.ok) throw new Error(`proxy fetch failed: ${res.status}`);
           const blob = await res.blob();
           const imageRef = ref(
             storage,
@@ -285,6 +286,7 @@ function CanvasEditorInner() {
           finalUrl = await getDownloadURL(imageRef);
         } catch (err) {
           console.error("Failed to upload generated image to Storage", err);
+          throw new Error("فشل حفظ الصورة الناتجة بشكل دائم. حاول مرة أخرى.");
         }
         try {
           await setDoc(

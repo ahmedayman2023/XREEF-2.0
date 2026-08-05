@@ -2013,7 +2013,7 @@ export default function ProjectWorkspace() {
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <h1 className="font-bold text-base sm:text-lg leading-tight text-white tracking-wide">
-                XREEF <span className="text-blue-400">2.0</span>
+                XReef <span className="text-blue-400">V3.0</span>
               </h1>
             </div>
           </div>

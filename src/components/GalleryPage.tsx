@@ -349,7 +349,7 @@ export default function GalleryPage() {
                 <Sparkles className="w-10 h-10 text-blue-400" />
               </div>
               
-              <h1 className="text-4xl font-extrabold text-white mb-4 text-center tracking-tight font-sans">XREEF 2.0</h1>
+              <h1 className="text-4xl font-extrabold text-white mb-4 text-center tracking-tight font-sans">XReef V3.0</h1>
               <p className="text-gray-300 text-center mb-10 text-base leading-relaxed">
                 XREEF is an advanced AI-powered image generation platform designed to create high-quality, creative visuals.
               </p>
@@ -408,7 +408,7 @@ export default function GalleryPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-4 group">
-              <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XREEF 2.0</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white font-sans">XReef V3.0</h1>
             </Link>
             
             <div className="hidden sm:flex items-center gap-1 bg-white/[0.03] border border-white/5 p-1 rounded-xl">
@@ -879,7 +879,7 @@ export default function GalleryPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-neutral-500">
           <div className="flex flex-col gap-2 text-center md:text-right">
             <div className="flex items-center justify-center md:justify-start gap-2 text-white font-bold mb-1">
-              <span>XREEF 2.0</span>
+              <span>XReef V3.0</span>
             </div>
           </div>
           
