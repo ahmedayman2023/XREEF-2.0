@@ -32,6 +32,7 @@ import {
   Folder,
   Video,
   Copy,
+  Workflow,
 } from "lucide-react";
 import ReactCrop, { type Crop as CropType } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -2038,6 +2039,15 @@ export default function ProjectWorkspace() {
           >
             <ImageIcon size={14} className="text-blue-400" />
             <span className="hidden sm:inline">المعرض العام</span>
+          </button>
+
+          <button
+            onClick={() => navigate(`/employee/${employeeId}/project/${projectId}/canvas`)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 py-2 px-3 rounded-xl transition-all"
+            title="عرض Canvas التفاعلي"
+          >
+            <Workflow size={14} className="text-teal-400" />
+            <span className="hidden sm:inline">Canvas</span>
           </button>
 
           <button

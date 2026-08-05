@@ -6,6 +6,7 @@ import StartupHello from './components/StartupHello';
 const ProjectsPage = lazy(() => import('./components/ProjectsPage'));
 const EmployeeProjectsPage = lazy(() => import('./components/EmployeeProjectsPage'));
 const ProjectWorkspace = lazy(() => import('./components/ProjectWorkspace'));
+const CanvasEditor = lazy(() => import('./components/canvas/CanvasEditor'));
 const GalleryPage = lazy(() => import('./components/GalleryPage'));
 const SupportPage = lazy(() => import('./components/SupportPage'));
 const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/" element={<ProjectsPage />} />
             <Route path="/employee/:employeeId" element={<EmployeeProjectsPage />} />
             <Route path="/employee/:employeeId/project/:projectId" element={<ProjectWorkspace />} />
+            <Route path="/employee/:employeeId/project/:projectId/canvas" element={<CanvasEditor />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
