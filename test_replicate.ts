@@ -1,5 +1,6 @@
+import "dotenv/config";
 import Replicate from "replicate";
-const token = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN || "r8_LYEuUd7ipxNxocBQwlmWuIg4OpXo6Ym4BGh16";
+const token = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN;
 
 const replicate = new Replicate({ auth: token });
 async function run() {

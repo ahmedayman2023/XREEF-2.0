@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -153,7 +154,7 @@ async function startServer() {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
-      const replicateApiToken = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN || "r8_LYEuUd7ipxNxocBQwlmWuIg4OpXo6Ym4BGh16";
+      const replicateApiToken = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN;
       if (!replicateApiToken) {
         return res.status(500).json({ error: "Replicate API Token is not set" });
       }
@@ -331,7 +332,7 @@ async function startServer() {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
-      const replicateApiToken = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN || "r8_LYEuUd7ipxNxocBQwlmWuIg4OpXo6Ym4BGh16";
+      const replicateApiToken = process.env.VITE_REPLICATE_API_TOKEN || process.env.REPLICATE_API_TOKEN;
       if (!replicateApiToken) {
         return res.status(500).json({ error: "Replicate API Token is not set" });
       }
